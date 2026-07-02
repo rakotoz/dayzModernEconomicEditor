@@ -16,6 +16,7 @@ export interface DayzEditorApi {
     writeFile: (path: string, content: string) => Promise<ApiResult>;
     parseXml: (content: string) => Promise<ApiResult>;
     findFilesByExtension: (dirPath: string, extensions: string[]) => Promise<ApiResult<string[]>>;
+    findFileRecursive: (rootPath: string, fileName: string, maxDepth?: number) => Promise<ApiResult<string[]>>;
 }
 
 declare global {

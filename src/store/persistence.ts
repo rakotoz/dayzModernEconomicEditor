@@ -5,6 +5,8 @@ const STORAGE_KEY = 'dayz-editor-projects-state';
 export interface PersistedState {
     projects: Project[];
     currentProjectId: string | null;
+    navCollapsed: boolean;
+    sidebarCollapsed: boolean;
 }
 
 export const loadPersistedState = (): Partial<PersistedState> => {

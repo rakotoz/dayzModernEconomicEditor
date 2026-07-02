@@ -15,6 +15,7 @@ export interface Project {
     traders: TraderMod;
     createBackups: boolean;
     serverConfigPath?: string;
+    economyCorePath?: string;
 }
 
 export interface ConfigFile {

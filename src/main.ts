@@ -60,6 +60,37 @@ ipcMain.handle('find-files-by-extension', async (event, dirPath: string, extensi
     }
 });
 
+ipcMain.handle('find-file-recursive', async (event, rootPath: string, fileName: string, maxDepth = 6) => {
+    const target = fileName.toLowerCase();
+    const results: string[] = [];
+    const skipDirs = new Set(['.git', 'node_modules', '.idea', '.vscode']);
+
+    const walk = async (dir: string, depth: number) => {
+        if (depth > maxDepth) return;
+        let entries: import('node:fs').Dirent[];
+        try {
+            entries = await fs.readdir(dir, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const entry of entries) {
+            if (entry.isDirectory()) {
+                if (skipDirs.has(entry.name) || entry.name.startsWith('.')) continue;
+                await walk(path.join(dir, entry.name), depth + 1);
+            } else if (entry.isFile() && entry.name.toLowerCase() === target) {
+                results.push(path.join(dir, entry.name));
+            }
+        }
+    };
+
+    try {
+        await walk(rootPath, 0);
+        return { success: true, data: results };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
 ipcMain.handle('read-file', async (event, filePath: string) => {
     try {
         const content = await fs.readFile(filePath, 'utf-8');

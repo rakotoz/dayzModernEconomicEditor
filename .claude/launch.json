@@ -4,9 +4,8 @@
     {
       "name": "renderer",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--config", "vite.renderer.config.ts"],
-      "port": 5173,
-      "autoPort": true
+      "runtimeArgs": ["vite", "--config", "vite.renderer.config.ts", "--port", "5199", "--strictPort"],
+      "port": 5199
     }
   ]
 }

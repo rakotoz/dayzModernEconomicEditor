@@ -9,8 +9,8 @@ export const store = configureStore({
 });
 
 store.subscribe(() => {
-    const { projects, currentProjectId } = store.getState().app;
-    savePersistedState({ projects, currentProjectId });
+    const { projects, currentProjectId, navCollapsed, sidebarCollapsed } = store.getState().app;
+    savePersistedState({ projects, currentProjectId, navCollapsed, sidebarCollapsed });
 });
 
 export type RootState = ReturnType<typeof store.getState>;

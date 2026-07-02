@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld('api', {
     parseXml: (content: string) => ipcRenderer.invoke('parse-xml', content),
     findFilesByExtension: (dirPath: string, extensions: string[]) =>
         ipcRenderer.invoke('find-files-by-extension', dirPath, extensions),
+    findFileRecursive: (rootPath: string, fileName: string, maxDepth?: number) =>
+        ipcRenderer.invoke('find-file-recursive', rootPath, fileName, maxDepth),
 });

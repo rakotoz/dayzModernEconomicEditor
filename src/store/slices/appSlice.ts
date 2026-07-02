@@ -7,6 +7,8 @@ export interface AppState {
     currentProjectId: string | null;
     currentConfig: ConfigFile | null;
     mods: any[];
+    navCollapsed: boolean;
+    sidebarCollapsed: boolean;
 }
 
 const persisted = loadPersistedState();
@@ -16,6 +18,8 @@ const initialState: AppState = {
     currentProjectId: persisted.currentProjectId ?? null,
     currentConfig: null,
     mods: [],
+    navCollapsed: persisted.navCollapsed ?? false,
+    sidebarCollapsed: persisted.sidebarCollapsed ?? false,
 };
 
 const appSlice = createSlice({
@@ -58,11 +62,25 @@ const appSlice = createSlice({
         setMods: (state: AppState, action: PayloadAction<any[]>) => {
             state.mods = action.payload;
         },
+        toggleNavCollapsed: (state: AppState) => {
+            state.navCollapsed = !state.navCollapsed;
+        },
+        toggleSidebarCollapsed: (state: AppState) => {
+            state.sidebarCollapsed = !state.sidebarCollapsed;
+        },
     },
 });
 
-export const { addProject, updateProject, removeProject, setCurrentProjectId, setCurrentConfig, setMods } =
-    appSlice.actions;
+export const {
+    addProject,
+    updateProject,
+    removeProject,
+    setCurrentProjectId,
+    setCurrentConfig,
+    setMods,
+    toggleNavCollapsed,
+    toggleSidebarCollapsed,
+} = appSlice.actions;
 
 export const selectCurrentProject = (state: { app: AppState }): Project | null =>
     state.app.projects.find((p) => p.id === state.app.currentProjectId) ?? null;

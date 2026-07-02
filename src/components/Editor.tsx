@@ -3,7 +3,9 @@ import { Box, Typography, TextField } from '@mui/material';
 import { useAppSelector } from '../store/hooks';
 import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
+import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
 import { ServerConfigView } from '../views/ServerConfigView';
+import { TypesXmlView } from '../views/TypesXmlView';
 
 export const Editor = () => {
     const currentConfig = useAppSelector((state: RootState) => state.app.currentConfig);
@@ -18,6 +20,10 @@ export const Editor = () => {
 
     if (currentConfig.id === SERVER_CONFIG_ID) {
         return <ServerConfigView />;
+    }
+
+    if (currentConfig.id === ECONOMY_CONFIG_ID) {
+        return <TypesXmlView />;
     }
 
     return (
