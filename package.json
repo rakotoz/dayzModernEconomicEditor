@@ -41,13 +41,18 @@
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "@mui/styled-engine-sc": "^9.0.1",
+        "@reduxjs/toolkit": "^2.11.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "electron-squirrel-startup": "^1.0.1",
+        "i18next": "^26.0.10",
         "prettier": "^3.8.3",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
+        "react-i18next": "^17.0.7",
+        "react-redux": "^9.1.2",
         "react-router": "^7.15.0",
-        "styled-components": "^6.4.1"
+        "styled-components": "^6.4.1",
+        "xml2js": "^0.6.2"
     }
 }
