@@ -4,8 +4,10 @@ import { useAppSelector } from '../store/hooks';
 import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
+import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
 import { ServerConfigView } from '../views/ServerConfigView';
 import { TypesXmlView } from '../views/TypesXmlView';
+import { EventsView } from '../views/EventsView';
 
 export const Editor = () => {
     const currentConfig = useAppSelector((state: RootState) => state.app.currentConfig);
@@ -24,6 +26,10 @@ export const Editor = () => {
 
     if (currentConfig.id === ECONOMY_CONFIG_ID) {
         return <TypesXmlView />;
+    }
+
+    if (currentConfig.id === EVENTS_CONFIG_ID) {
+        return <EventsView />;
     }
 
     return (

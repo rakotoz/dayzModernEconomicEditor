@@ -16,6 +16,7 @@ export interface Project {
     createBackups: boolean;
     serverConfigPath?: string;
     economyCorePath?: string;
+    eventsXmlPath?: string;
 }
 
 export interface ConfigFile {

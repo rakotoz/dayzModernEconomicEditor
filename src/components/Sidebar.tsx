@@ -3,6 +3,7 @@ import React from 'react';
 import { Box, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, Tooltip } from '@mui/material';
 import DnsIcon from '@mui/icons-material/Dns';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import EventIcon from '@mui/icons-material/Event';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
@@ -10,9 +11,25 @@ import { setCurrentConfig, toggleSidebarCollapsed } from '../store/slices/appSli
 import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
+import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
 
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
+
+const SECTIONS = [
+    {
+        title: 'Сервер',
+        items: [{ id: SERVER_CONFIG_ID, name: 'Параметры сервера', icon: <DnsIcon fontSize="small" /> }],
+    },
+    {
+        title: 'Экономика',
+        items: [{ id: ECONOMY_CONFIG_ID, name: 'Экономика (types.xml)', label: 'Типы предметов', icon: <TableChartIcon fontSize="small" /> }],
+    },
+    {
+        title: 'События',
+        items: [{ id: EVENTS_CONFIG_ID, name: 'События (events.xml)', label: 'События', icon: <EventIcon fontSize="small" /> }],
+    },
+];
 
 export const Sidebar = () => {
     const dispatch = useAppDispatch();
@@ -48,43 +65,28 @@ export const Sidebar = () => {
             <Divider />
 
             <List sx={{ overflow: 'auto' }}>
-                {!collapsed && (
-                    <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: 'bold' }}>
-                        Сервер
-                    </Typography>
-                )}
-                <Tooltip title={collapsed ? 'Параметры сервера' : ''} placement="right">
-                    <ListItemButton
-                        selected={currentConfig?.id === SERVER_CONFIG_ID}
-                        sx={{ pl: collapsed ? 2 : 4, justifyContent: collapsed ? 'center' : 'flex-start' }}
-                        onClick={() => dispatch(setCurrentConfig({ id: SERVER_CONFIG_ID, name: 'Параметры сервера', path: '' }))}
-                    >
-                        <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 32 }}>
-                            <DnsIcon fontSize="small" />
-                        </ListItemIcon>
-                        {!collapsed && <ListItemText primary="Параметры сервера" />}
-                    </ListItemButton>
-                </Tooltip>
-
-                <Divider sx={{ my: 1 }} />
-
-                {!collapsed && (
-                    <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: 'bold' }}>
-                        Экономика
-                    </Typography>
-                )}
-                <Tooltip title={collapsed ? 'Типы предметов' : ''} placement="right">
-                    <ListItemButton
-                        selected={currentConfig?.id === ECONOMY_CONFIG_ID}
-                        sx={{ pl: collapsed ? 2 : 4, justifyContent: collapsed ? 'center' : 'flex-start' }}
-                        onClick={() => dispatch(setCurrentConfig({ id: ECONOMY_CONFIG_ID, name: 'Экономика (types.xml)', path: '' }))}
-                    >
-                        <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 32 }}>
-                            <TableChartIcon fontSize="small" />
-                        </ListItemIcon>
-                        {!collapsed && <ListItemText primary="Типы предметов" />}
-                    </ListItemButton>
-                </Tooltip>
+                {SECTIONS.map((section, sectionIndex) => (
+                    <React.Fragment key={section.title}>
+                        {sectionIndex > 0 && <Divider sx={{ my: 1 }} />}
+                        {!collapsed && (
+                            <Typography variant="subtitle2" sx={{ px: 2, py: 1, fontWeight: 'bold' }}>
+                                {section.title}
+                            </Typography>
+                        )}
+                        {section.items.map((item) => (
+                            <Tooltip key={item.id} title={collapsed ? item.label ?? item.name : ''} placement="right">
+                                <ListItemButton
+                                    selected={currentConfig?.id === item.id}
+                                    sx={{ pl: collapsed ? 2 : 4, justifyContent: collapsed ? 'center' : 'flex-start' }}
+                                    onClick={() => dispatch(setCurrentConfig({ id: item.id, name: item.name, path: '' }))}
+                                >
+                                    <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 32 }}>{item.icon}</ListItemIcon>
+                                    {!collapsed && <ListItemText primary={item.label ?? item.name} />}
+                                </ListItemButton>
+                            </Tooltip>
+                        ))}
+                    </React.Fragment>
+                ))}
             </List>
         </Box>
     );

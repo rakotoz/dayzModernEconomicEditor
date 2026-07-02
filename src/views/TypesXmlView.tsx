@@ -132,7 +132,12 @@ const CategoryGrid = ({
     columns: GridColDef<EconomyRow>[];
     onRowUpdate: (newRow: EconomyRow, oldRow: EconomyRow) => EconomyRow;
 }) => {
-    const height = Math.min(rows.length * 36 + 64, 480);
+    // Заголовок таблицы (compact density) ~39px, строка ~36px — проверено в живом гриде.
+    // Футер с пагинацией скрыт: внутри категории строк почти всегда меньше 100, а его 52px
+    // при малом числе строк "съедали" всю высоту и прятали строки. При множестве колонок
+    // (их тут 16) появляется горизонтальный скроллбар — он оверлеем перекрывает низ последней
+    // строки, а не добавляет высоту, поэтому под него нужен отдельный запас.
+    const height = Math.min(rows.length * 36 + 40 + 16, 480);
     return (
         <Box sx={{ height, width: '100%' }}>
             <DataGrid
@@ -142,7 +147,7 @@ const CategoryGrid = ({
                 disableRowSelectionOnClick
                 processRowUpdate={onRowUpdate}
                 onProcessRowUpdateError={() => {}}
-                hideFooterSelectedRowCount
+                hideFooter
                 sx={{ border: 0, height: '100%' }}
             />
         </Box>
