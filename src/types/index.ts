@@ -17,6 +17,7 @@ export interface Project {
     serverConfigPath?: string;
     economyCorePath?: string;
     eventsXmlPath?: string;
+    eventSpawnsXmlPath?: string;
 }
 
 export interface ConfigFile {

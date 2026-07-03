@@ -17,6 +17,11 @@ export interface DayzEditorApi {
     parseXml: (content: string) => Promise<ApiResult>;
     findFilesByExtension: (dirPath: string, extensions: string[]) => Promise<ApiResult<string[]>>;
     findFileRecursive: (rootPath: string, fileName: string, maxDepth?: number) => Promise<ApiResult<string[]>>;
+    getMapImagePath: (mapKey: string) => Promise<ApiResult<string | null>>;
+    importMapImage: (mapKey: string, sourcePath: string) => Promise<ApiResult<string>>;
+    downloadMapImage: (mapKey: string, url: string) => Promise<ApiResult<string>>;
+    downloadMapAddon: (mapKey: string, url: string) => Promise<ApiResult<string>>;
+    getStorageDir: () => Promise<ApiResult<string>>;
 }
 
 declare global {

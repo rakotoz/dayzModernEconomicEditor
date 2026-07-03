@@ -23,7 +23,8 @@ import {
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useTranslation } from 'react-i18next';
 import { Project, SetupType, TraderMod } from '../types';
-import { DAYZ_MAPS, findDayzMapByLabel, getDayzMapPath } from '../data/dayzMaps';
+import { DAYZ_MAPS, findDayzMapByLabel, getDayzMapPath, getMapKeyForLabel } from '../data/dayzMaps';
+import { MapImageManager } from './MapImageManager';
 
 const MAP_LABELS = DAYZ_MAPS.map((m) => m.label);
 
@@ -220,6 +221,8 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                         helperText={t('projectForm.mapPathHelper')}
                         fullWidth
                     />
+
+                    <MapImageManager mapKey={getMapKeyForLabel(values.map)} />
 
                     <FormControl>
                         <FormLabel>{t('projectForm.traders')}</FormLabel>

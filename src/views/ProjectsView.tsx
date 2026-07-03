@@ -10,6 +10,20 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { addProject, removeProject, setCurrentProjectId, updateProject } from '../store/slices/appSlice';
 import { Project } from '../types';
 import { ProjectFormDialog, ProjectFormValues } from '../components/ProjectFormDialog';
+import { getMapAssetUrlByKey, getMapKeyForLabel } from '../data/dayzMaps';
+
+// Фоновая догрузка карты при создании проекта: если изображения ещё нет в кэше приложения,
+// а в нашем хранилище есть архив для этой карты — скачиваем, не блокируя переход в редактор.
+const ensureMapImageCached = (mapLabel: string) => {
+    const mapKey = getMapKeyForLabel(mapLabel);
+    const assetUrl = getMapAssetUrlByKey(mapKey);
+    if (!assetUrl) return;
+    window.api.getMapImagePath(mapKey).then((res) => {
+        if (res.success && !res.data) {
+            window.api.downloadMapAddon(mapKey, assetUrl);
+        }
+    });
+};
 
 export const ProjectsView = () => {
     const dispatch = useAppDispatch();
@@ -46,6 +60,7 @@ export const ProjectsView = () => {
         } else {
             const action = dispatch(addProject(values));
             dispatch(setCurrentProjectId(action.payload.id));
+            ensureMapImageCached(values.map);
             navigate('/editor');
         }
         setDialogOpen(false);

@@ -6,9 +6,11 @@ import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
 import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
+import { EVENT_SPAWNS_CONFIG_ID } from '../dayzConfig/eventSpawnsXml';
 import { ServerConfigView } from '../views/ServerConfigView';
 import { TypesXmlView } from '../views/TypesXmlView';
 import { EventsView } from '../views/EventsView';
+import { EventSpawnsView } from '../views/EventSpawnsView';
 
 export const Editor = () => {
     const { t } = useTranslation();
@@ -32,6 +34,10 @@ export const Editor = () => {
 
     if (currentConfig.id === EVENTS_CONFIG_ID) {
         return <EventsView />;
+    }
+
+    if (currentConfig.id === EVENT_SPAWNS_CONFIG_ID) {
+        return <EventSpawnsView />;
     }
 
     return (

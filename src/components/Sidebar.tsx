@@ -4,6 +4,7 @@ import { Box, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Typo
 import DnsIcon from '@mui/icons-material/Dns';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import EventIcon from '@mui/icons-material/Event';
+import PlaceIcon from '@mui/icons-material/Place';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
 import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
+import { EVENT_SPAWNS_CONFIG_ID } from '../dayzConfig/eventSpawnsXml';
 
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
@@ -47,6 +49,12 @@ export const Sidebar = () => {
                     name: t('sidebar.eventsFull'),
                     label: t('sidebar.events'),
                     icon: <EventIcon fontSize="small" />,
+                },
+                {
+                    id: EVENT_SPAWNS_CONFIG_ID,
+                    name: t('sidebar.eventSpawnsFull'),
+                    label: t('sidebar.eventSpawns'),
+                    icon: <PlaceIcon fontSize="small" />,
                 },
             ],
         },

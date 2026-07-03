@@ -1,11 +1,23 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { pathToFileURL } from 'node:url';
 import { parseStringPromise, Builder } from 'xml2js';
+
+const execFileAsync = promisify(execFile);
 
 if (require('electron-squirrel-startup')) {
     app.quit();
 }
+
+// Собственная схема для локальных ресурсов приложения: страница renderer в dev-режиме
+// загружается по http://, и Chromium блокирует в ней file://-подресурсы, поэтому картинки
+// карт отдаём через dayzasset://maps/<имя файла>.
+protocol.registerSchemesAsPrivileged([
+    { scheme: 'dayzasset', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true } },
+]);
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -118,7 +130,170 @@ ipcMain.handle('parse-xml', async (event, xmlContent: string) => {
     }
 });
 
-app.on('ready', createWindow);
+// Хранилище данных приложения — видимая пользователю папка в «Документах» (карты и прочие
+// ресурсы, не привязанные к конкретному проекту: разные проекты с одной картой используют
+// один файл). Создаётся лениво при первом обращении.
+const getStorageRoot = () => path.join(app.getPath('documents'), 'DayZModernEconomicEditor');
+
+const getAppDataDir = async (...segments: string[]) => {
+    const dir = path.join(getStorageRoot(), ...segments);
+    await fs.mkdir(dir, { recursive: true });
+    return dir;
+};
+
+// Ранние версии складывали карты в userData — переносим уже скачанное в новую папку,
+// чтобы не качать большие архивы повторно.
+const migrateLegacyMaps = async () => {
+    try {
+        const legacyDir = path.join(app.getPath('userData'), 'maps');
+        const entries = await fs.readdir(legacyDir).catch(() => [] as string[]);
+        if (entries.length === 0) return;
+        const mapsDir = await getAppDataDir('maps');
+        for (const name of entries) {
+            const dest = path.join(mapsDir, name);
+            try {
+                await fs.access(dest);
+            } catch {
+                await fs.copyFile(path.join(legacyDir, name), dest).catch(() => {});
+            }
+        }
+    } catch {
+        // миграция некритична — при неудаче карту можно скачать заново
+    }
+};
+
+const setupAssetProtocol = () => {
+    protocol.handle('dayzasset', async (request) => {
+        try {
+            const url = new URL(request.url);
+            if (url.host !== 'maps') return new Response('Not found', { status: 404 });
+            const fileName = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+            if (!fileName || fileName.includes('..') || fileName.includes('/') || fileName.includes('\\')) {
+                return new Response('Bad request', { status: 400 });
+            }
+            const mapsDir = await getAppDataDir('maps');
+            return net.fetch(pathToFileURL(path.join(mapsDir, fileName)).toString());
+        } catch {
+            return new Response('Internal error', { status: 500 });
+        }
+    });
+};
+
+ipcMain.handle('get-storage-dir', async () => {
+    try {
+        return { success: true, data: await getAppDataDir() };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
+const MAP_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp'];
+
+ipcMain.handle('get-map-image-path', async (event, mapKey: string) => {
+    try {
+        const dir = await getAppDataDir('maps');
+        for (const ext of MAP_IMAGE_EXTENSIONS) {
+            const candidate = path.join(dir, mapKey + ext);
+            try {
+                await fs.access(candidate);
+                return { success: true, data: candidate };
+            } catch {
+                // файла с этим расширением нет — пробуем следующее
+            }
+        }
+        return { success: true, data: null };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('import-map-image', async (event, mapKey: string, sourcePath: string) => {
+    try {
+        const dir = await getAppDataDir('maps');
+        const ext = MAP_IMAGE_EXTENSIONS.includes(path.extname(sourcePath).toLowerCase())
+            ? path.extname(sourcePath).toLowerCase()
+            : '.png';
+        const dest = path.join(dir, mapKey + ext);
+        await fs.copyFile(sourcePath, dest);
+        return { success: true, data: dest };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Архивы карт (.rar/.zip из GitHub-релиза) распаковываем системным tar.exe: он собран
+// поверх libarchive и читает оба формата, что избавляет от нативных npm-зависимостей.
+const getTarPath = () =>
+    process.platform === 'win32' ? path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar';
+
+ipcMain.handle('download-map-addon', async (event, mapKey: string, url: string) => {
+    const workDir = path.join(app.getPath('temp'), 'dayz-editor', `addon-${Date.now()}`);
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'https:') {
+            return { success: false, error: 'Поддерживаются только https ссылки' };
+        }
+        await fs.mkdir(workDir, { recursive: true });
+
+        const res = await fetch(url);
+        if (!res.ok) {
+            return { success: false, error: `HTTP ${res.status} ${res.statusText}` };
+        }
+        const archivePath = path.join(workDir, 'addon' + (path.extname(parsed.pathname).toLowerCase() || '.rar'));
+        await fs.writeFile(archivePath, Buffer.from(await res.arrayBuffer()));
+
+        const tar = getTarPath();
+        const { stdout } = await execFileAsync(tar, ['-tf', archivePath], { maxBuffer: 10 * 1024 * 1024 });
+        const entries = stdout
+            .split(/\r?\n/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        const pngEntry = entries.find((e) => e.toLowerCase().endsWith('.png'));
+        if (!pngEntry) {
+            return { success: false, error: 'В архиве не найдено PNG-изображение карты' };
+        }
+
+        await execFileAsync(tar, ['-xf', archivePath, '-C', workDir, pngEntry], { maxBuffer: 1024 * 1024 });
+        const extractedPath = path.join(workDir, ...pngEntry.split('/'));
+
+        const mapsDir = await getAppDataDir('maps');
+        const dest = path.join(mapsDir, mapKey + '.png');
+        await fs.copyFile(extractedPath, dest);
+        return { success: true, data: dest };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    } finally {
+        fs.rm(workDir, { recursive: true, force: true }).catch(() => {});
+    }
+});
+
+ipcMain.handle('download-map-image', async (event, mapKey: string, url: string) => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            return { success: false, error: 'Поддерживаются только http(s) ссылки' };
+        }
+        const res = await fetch(url);
+        if (!res.ok) {
+            return { success: false, error: `HTTP ${res.status} ${res.statusText}` };
+        }
+        const buffer = Buffer.from(await res.arrayBuffer());
+        const urlExt = path.extname(parsed.pathname).toLowerCase();
+        const ext = MAP_IMAGE_EXTENSIONS.includes(urlExt) ? urlExt : '.png';
+        const dir = await getAppDataDir('maps');
+        const dest = path.join(dir, mapKey + ext);
+        await fs.writeFile(dest, buffer);
+        return { success: true, data: dest };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
+app.on('ready', () => {
+    setupAssetProtocol();
+    migrateLegacyMaps();
+    createWindow();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
