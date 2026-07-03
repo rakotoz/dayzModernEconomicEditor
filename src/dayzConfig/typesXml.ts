@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export interface TypeFlags {
     count_in_cargo: boolean;
     count_in_hoarder: boolean;
@@ -35,7 +37,7 @@ const FLAG_ATTRS: (keyof TypeFlags)[] = [
 export const parseTypesXml = (raw: string): TypeEntry[] => {
     const doc = new DOMParser().parseFromString(raw, 'text/xml');
     if (doc.getElementsByTagName('parsererror').length > 0) {
-        throw new Error('Не удалось разобрать types.xml — файл повреждён или не является корректным XML');
+        throw new Error(i18n.t('economy.parseTypesFileError'));
     }
 
     const typeEls = Array.from(doc.documentElement.getElementsByTagName('type'));

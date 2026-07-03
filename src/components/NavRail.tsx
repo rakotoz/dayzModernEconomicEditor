@@ -4,14 +4,13 @@ import FolderIcon from '@mui/icons-material/Folder';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { useLocation, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { toggleNavCollapsed } from '../store/slices/appSlice';
-
-const NAV_ITEMS = [
-    { path: '/projects', label: 'Проекты', icon: <FolderIcon /> },
-    { path: '/editor', label: 'Параметры сервера', icon: <EditNoteIcon /> },
-];
+import { toggleNavCollapsed, toggleThemeMode, setLanguage } from '../store/slices/appSlice';
+import { Language } from '../store/persistence';
 
 const EXPANDED_WIDTH = 96;
 const COLLAPSED_WIDTH = 56;
@@ -20,8 +19,21 @@ export const NavRail = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const currentProjectId = useAppSelector((state) => state.app.currentProjectId);
     const collapsed = useAppSelector((state) => state.app.navCollapsed);
+    const themeMode = useAppSelector((state) => state.app.themeMode);
+    const language = useAppSelector((state) => state.app.language);
+
+    const NAV_ITEMS = [
+        { path: '/projects', label: t('nav.projects'), icon: <FolderIcon /> },
+        { path: '/editor', label: t('nav.editor'), icon: <EditNoteIcon /> },
+    ];
+
+    const handleToggleLanguage = () => {
+        const next: Language = language === 'ru' ? 'en' : 'ru';
+        dispatch(setLanguage(next));
+    };
 
     return (
         <Box
@@ -40,7 +52,7 @@ export const NavRail = () => {
                 {NAV_ITEMS.map((item) => {
                     const disabled = item.path === '/editor' && !currentProjectId;
                     const selected = location.pathname === item.path;
-                    const tooltipTitle = disabled ? 'Сначала выберите проект' : collapsed ? item.label : '';
+                    const tooltipTitle = disabled ? t('nav.selectProjectFirst') : collapsed ? item.label : '';
                     return (
                         <Tooltip key={item.path} title={tooltipTitle} placement="right">
                             <span>
@@ -63,7 +75,27 @@ export const NavRail = () => {
                     );
                 })}
             </List>
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    py: 1,
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <Tooltip title={t('nav.language')} placement="right">
+                    <IconButton size="small" onClick={handleToggleLanguage} sx={{ fontSize: 11, fontWeight: 'bold' }}>
+                        {language === 'ru' ? 'RU' : 'EN'}
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title={themeMode === 'dark' ? t('nav.lightTheme') : t('nav.darkTheme')} placement="right">
+                    <IconButton size="small" onClick={() => dispatch(toggleThemeMode())}>
+                        {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                    </IconButton>
+                </Tooltip>
                 <IconButton size="small" onClick={() => dispatch(toggleNavCollapsed())}>
                     {collapsed ? <ChevronRightIcon fontSize="small" /> : <ChevronLeftIcon fontSize="small" />}
                 </IconButton>

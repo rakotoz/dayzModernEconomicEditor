@@ -4,69 +4,47 @@ export type ServerConfigFieldType = 'string' | 'number' | 'boolean';
 
 export interface ServerConfigFieldDef {
     key: string;
-    label: string;
     type: ServerConfigFieldType;
     group: string;
-    helperText?: string;
 }
 
-export const SERVER_CONFIG_GROUPS = ['Общее', 'Время и погода', 'Геймплей', 'Сеть и производительность', 'Миссия'] as const;
+// Значения группы и подписи полей — стабильные id, не текст: реальные подписи берутся из
+// переводов (server.groups.<id> / server.fields.<key>.label) в i18n-ресурсах.
+export const SERVER_CONFIG_GROUPS = ['general', 'time', 'gameplay', 'network', 'mission'] as const;
 
 export const SERVER_CONFIG_FIELDS: ServerConfigFieldDef[] = [
     // Общее
-    { key: 'hostname', label: 'Название сервера', type: 'string', group: 'Общее' },
-    { key: 'password', label: 'Пароль на сервер', type: 'string', group: 'Общее' },
-    { key: 'passwordAdmin', label: 'Пароль администратора', type: 'string', group: 'Общее' },
-    { key: 'enableWhitelist', label: 'Вайтлист', type: 'boolean', group: 'Общее' },
-    { key: 'maxPlayers', label: 'Макс. игроков', type: 'number', group: 'Общее' },
-    { key: 'verifySignatures', label: 'Проверка подписей модов', type: 'number', group: 'Общее', helperText: 'Обычно 2' },
-    { key: 'forceSameBuild', label: 'Требовать ту же версию клиента', type: 'boolean', group: 'Общее' },
-    { key: 'instanceId', label: 'ID инстанса', type: 'number', group: 'Общее' },
+    { key: 'hostname', type: 'string', group: 'general' },
+    { key: 'password', type: 'string', group: 'general' },
+    { key: 'passwordAdmin', type: 'string', group: 'general' },
+    { key: 'enableWhitelist', type: 'boolean', group: 'general' },
+    { key: 'maxPlayers', type: 'number', group: 'general' },
+    { key: 'verifySignatures', type: 'number', group: 'general' },
+    { key: 'forceSameBuild', type: 'boolean', group: 'general' },
+    { key: 'instanceId', type: 'number', group: 'general' },
 
     // Время и погода
-    {
-        key: 'serverTime',
-        label: 'Время сервера',
-        type: 'string',
-        group: 'Время и погода',
-        helperText: 'SystemTime или ГГГГ/ММ/ДД/ЧЧ/ММ',
-    },
-    { key: 'serverTimeAcceleration', label: 'Ускорение дневного времени', type: 'number', group: 'Время и погода' },
-    { key: 'serverNightTimeAcceleration', label: 'Ускорение ночного времени', type: 'number', group: 'Время и погода' },
-    {
-        key: 'serverTimePersistent',
-        label: 'Сохранять время между рестартами',
-        type: 'boolean',
-        group: 'Время и погода',
-    },
+    { key: 'serverTime', type: 'string', group: 'time' },
+    { key: 'serverTimeAcceleration', type: 'number', group: 'time' },
+    { key: 'serverNightTimeAcceleration', type: 'number', group: 'time' },
+    { key: 'serverTimePersistent', type: 'boolean', group: 'time' },
 
     // Геймплей
-    { key: 'disableVoN', label: 'Отключить голосовой чат', type: 'boolean', group: 'Геймплей' },
-    { key: 'vonCodecQuality', label: 'Качество голосового кодека', type: 'number', group: 'Геймплей', helperText: '0-30' },
-    { key: 'disable3rdPerson', label: 'Отключить вид от третьего лица', type: 'boolean', group: 'Геймплей' },
-    { key: 'disableCrosshair', label: 'Отключить прицел', type: 'boolean', group: 'Геймплей' },
-    { key: 'disableBaseDamage', label: 'Отключить урон по базам', type: 'boolean', group: 'Геймплей' },
-    { key: 'disableContainerDamage', label: 'Отключить урон по контейнерам', type: 'boolean', group: 'Геймплей' },
+    { key: 'disableVoN', type: 'boolean', group: 'gameplay' },
+    { key: 'vonCodecQuality', type: 'number', group: 'gameplay' },
+    { key: 'disable3rdPerson', type: 'boolean', group: 'gameplay' },
+    { key: 'disableCrosshair', type: 'boolean', group: 'gameplay' },
+    { key: 'disableBaseDamage', type: 'boolean', group: 'gameplay' },
+    { key: 'disableContainerDamage', type: 'boolean', group: 'gameplay' },
 
     // Сеть и производительность
-    {
-        key: 'guaranteedUpdates',
-        label: 'Guaranteed Updates',
-        type: 'number',
-        group: 'Сеть и производительность',
-        helperText: 'Обычно 1',
-    },
-    {
-        key: 'loginQueueConcurrentPlayers',
-        label: 'Одновременных входов в очереди',
-        type: 'number',
-        group: 'Сеть и производительность',
-    },
-    { key: 'loginQueueMaxPlayers', label: 'Макс. игроков в очереди', type: 'number', group: 'Сеть и производительность' },
-    { key: 'storageAutoFix', label: 'Автовосстановление хранилища', type: 'boolean', group: 'Сеть и производительность' },
+    { key: 'guaranteedUpdates', type: 'number', group: 'network' },
+    { key: 'loginQueueConcurrentPlayers', type: 'number', group: 'network' },
+    { key: 'loginQueueMaxPlayers', type: 'number', group: 'network' },
+    { key: 'storageAutoFix', type: 'boolean', group: 'network' },
 
     // Миссия
-    { key: 'template', label: 'Шаблон миссии', type: 'string', group: 'Миссия', helperText: 'class Missions > DayZ > template' },
+    { key: 'template', type: 'string', group: 'mission' },
 ];
 
 export type ServerConfigValue = string | number | boolean;

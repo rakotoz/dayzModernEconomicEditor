@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export const EVENTS_CONFIG_ID = 'events-config';
 
 export interface EventFlags {
@@ -42,7 +44,7 @@ const FLAG_ATTRS: (keyof EventFlags)[] = ['deletable', 'init_random', 'remove_da
 export const parseEventsXml = (raw: string): EventEntry[] => {
     const doc = new DOMParser().parseFromString(raw, 'text/xml');
     if (doc.getElementsByTagName('parsererror').length > 0) {
-        throw new Error('Не удалось разобрать events.xml — файл повреждён или не является корректным XML');
+        throw new Error(i18n.t('events.parseFileError'));
     }
 
     const eventEls = Array.from(doc.documentElement.getElementsByTagName('event'));

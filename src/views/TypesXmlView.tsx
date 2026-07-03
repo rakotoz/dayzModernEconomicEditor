@@ -23,6 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, updateProject } from '../store/slices/appSlice';
 import { parseEconomyCoreTypesFiles } from '../dayzConfig/economyCore';
@@ -55,8 +56,6 @@ interface EconomyRow {
     tagsText: string;
 }
 
-const NO_CATEGORY = '(без категории)';
-
 const humanizeFileLabel = (fileKey: string) => {
     const filename = fileKey.split('/').pop() ?? fileKey;
     const withoutExt = filename.replace(/\.xml$/i, '');
@@ -71,12 +70,17 @@ const splitList = (text: string) =>
         .map((s) => s.trim())
         .filter(Boolean);
 
-const entriesToRows = (entries: TypeEntry[], fileKey: string, sourcePath: string): EconomyRow[] =>
+const entriesToRows = (
+    entries: TypeEntry[],
+    fileKey: string,
+    sourcePath: string,
+    noCategoryLabel: string
+): EconomyRow[] =>
     entries.map((e, index) => ({
         id: `${fileKey}::${e.name || 'unnamed'}::${index}`,
         __fileKey: fileKey,
         __sourcePath: sourcePath,
-        __category: e.category || NO_CATEGORY,
+        __category: e.category || noCategoryLabel,
         name: e.name,
         category: e.category,
         nominal: e.nominal,
@@ -156,6 +160,7 @@ const CategoryGrid = ({
 
 export const TypesXmlView = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const project = useAppSelector(selectCurrentProject);
 
     const [status, setStatus] = useState<ViewStatus>('detecting');
@@ -185,7 +190,7 @@ export const TypesXmlView = () => {
         setErrorMessage(null);
         const coreRes = await window.api.readFile(path);
         if (!coreRes.success || coreRes.data === undefined) {
-            setErrorMessage(coreRes.error ?? 'Не удалось прочитать cfgeconomycore.xml');
+            setErrorMessage(coreRes.error ?? t('economy.readCoreError'));
             setStatus('error');
             return;
         }
@@ -194,7 +199,7 @@ export const TypesXmlView = () => {
         try {
             fileInfos = parseEconomyCoreTypesFiles(coreRes.data);
         } catch (e: any) {
-            setErrorMessage(e.message ?? 'Не удалось разобрать cfgeconomycore.xml');
+            setErrorMessage(e.message ?? t('economy.parseCoreError'));
             setStatus('error');
             return;
         }
@@ -202,11 +207,14 @@ export const TypesXmlView = () => {
         // db/types.xml — база economy-движка DayZ, сервер грузит её независимо от того,
         // объявлена ли она в cfgeconomycore.xml. Добавляем неявно, если ещё не объявлена явно.
         const hasExplicitDb = fileInfos.some(
-            (info) => info.folder.toLowerCase() === 'db' && info.fileName.toLowerCase() === 'types.xml'
+            (info) => info.folder.toLowerCase() === 'db' && info.fileName.toLowerCase() === 'types.xml',
         );
         const allFileInfos = hasExplicitDb
             ? fileInfos.map((info) => ({ ...info, optional: false }))
-            : [{ folder: 'db', fileName: 'types.xml', optional: true }, ...fileInfos.map((info) => ({ ...info, optional: false }))];
+            : [
+                  { folder: 'db', fileName: 'types.xml', optional: true },
+                  ...fileInfos.map((info) => ({ ...info, optional: false })),
+              ];
 
         const missionRoot = dirnamePath(path);
         const resolved = allFileInfos.map((info) => ({
@@ -222,16 +230,20 @@ export const TypesXmlView = () => {
                     return {
                         fileKey,
                         sourcePath,
-                        warning: optional ? undefined : `${fileKey}: ${res.error ?? 'не удалось прочитать'}`,
+                        warning: optional ? undefined : `${fileKey}: ${res.error ?? t('economy.readFileError')}`,
                     };
                 }
                 try {
                     const entries = parseTypesXml(res.data);
-                    return { fileKey, sourcePath, rows: entriesToRows(entries, fileKey, sourcePath) };
+                    return {
+                        fileKey,
+                        sourcePath,
+                        rows: entriesToRows(entries, fileKey, sourcePath, t('economy.noCategory')),
+                    };
                 } catch (e: any) {
-                    return { fileKey, sourcePath, warning: `${fileKey}: ${e.message ?? 'ошибка разбора'}` };
+                    return { fileKey, sourcePath, warning: `${fileKey}: ${e.message ?? t('economy.parseFileError')}` };
                 }
-            })
+            }),
         );
 
         const allRows: EconomyRow[] = [];
@@ -242,7 +254,7 @@ export const TypesXmlView = () => {
         }
 
         if (allRows.length === 0) {
-            setErrorMessage('Не найдено ни одного типа предметов — ни в db/types.xml, ни в cfgeconomycore.xml');
+            setErrorMessage(t('economy.noTypesFound'));
             setStatus('error');
             return;
         }
@@ -264,7 +276,7 @@ export const TypesXmlView = () => {
         setErrorMessage(null);
         const res = await window.api.findFileRecursive(project.path, 'cfgeconomycore.xml');
         if (!res.success || !res.data) {
-            setErrorMessage(res.error ?? 'Не удалось просканировать папку проекта');
+            setErrorMessage(res.error ?? t('economy.scanError'));
             setStatus('error');
             return;
         }
@@ -298,46 +310,46 @@ export const TypesXmlView = () => {
 
     const columns: GridColDef<EconomyRow>[] = useMemo(
         () => [
-            { field: 'name', headerName: 'Название', width: 240, editable: true },
+            { field: 'name', headerName: t('economy.columns.name'), width: 240, editable: true },
             {
                 field: 'category',
-                headerName: 'Категория',
+                headerName: t('economy.columns.category'),
                 width: 140,
                 editable: true,
                 type: 'singleSelect',
                 valueOptions: categoryOptions,
             },
-            { field: 'nominal', headerName: 'Nominal', type: 'number', width: 100, editable: true },
-            { field: 'min', headerName: 'Min', type: 'number', width: 90, editable: true },
-            { field: 'quantmin', headerName: 'QuantMin', type: 'number', width: 100, editable: true },
-            { field: 'quantmax', headerName: 'QuantMax', type: 'number', width: 100, editable: true },
-            { field: 'usageText', headerName: 'Usage', width: 220, editable: true },
-            { field: 'valueText', headerName: 'Value (tiers)', width: 160, editable: true },
-            { field: 'tagsText', headerName: 'Tags', width: 160, editable: true },
-            { field: 'lifetime', headerName: 'Lifetime, сек', type: 'number', width: 120, editable: true },
-            { field: 'restock', headerName: 'Restock, сек', type: 'number', width: 110, editable: true },
-            { field: 'cost', headerName: 'Cost', type: 'number', width: 90, editable: true },
-            { field: 'count_in_cargo', headerName: 'В машинах', type: 'boolean', width: 110, editable: true },
-            { field: 'count_in_hoarder', headerName: 'В тайниках', type: 'boolean', width: 110, editable: true },
-            { field: 'count_in_map', headerName: 'На карте', type: 'boolean', width: 100, editable: true },
-            { field: 'count_in_player', headerName: 'У игроков', type: 'boolean', width: 100, editable: true },
-            { field: 'crafted', headerName: 'Крафт', type: 'boolean', width: 90, editable: true },
-            { field: 'deloot', headerName: 'Deloot', type: 'boolean', width: 90, editable: true },
+            { field: 'nominal', headerName: t('economy.columns.nominal'), type: 'number', width: 100, editable: true },
+            { field: 'min', headerName: t('economy.columns.min'), type: 'number', width: 90, editable: true },
+            { field: 'quantmin', headerName: t('economy.columns.quantmin'), type: 'number', width: 100, editable: true },
+            { field: 'quantmax', headerName: t('economy.columns.quantmax'), type: 'number', width: 100, editable: true },
+            { field: 'usageText', headerName: t('economy.columns.usage'), width: 220, editable: true },
+            { field: 'valueText', headerName: t('economy.columns.value'), width: 160, editable: true },
+            { field: 'tagsText', headerName: t('economy.columns.tags'), width: 160, editable: true },
+            { field: 'lifetime', headerName: t('economy.columns.lifetime'), type: 'number', width: 120, editable: true },
+            { field: 'restock', headerName: t('economy.columns.restock'), type: 'number', width: 110, editable: true },
+            { field: 'cost', headerName: t('economy.columns.cost'), type: 'number', width: 90, editable: true },
+            { field: 'count_in_cargo', headerName: t('economy.columns.countInCargo'), type: 'boolean', width: 110, editable: true },
+            { field: 'count_in_hoarder', headerName: t('economy.columns.countInHoarder'), type: 'boolean', width: 110, editable: true },
+            { field: 'count_in_map', headerName: t('economy.columns.countInMap'), type: 'boolean', width: 100, editable: true },
+            { field: 'count_in_player', headerName: t('economy.columns.countInPlayer'), type: 'boolean', width: 100, editable: true },
+            { field: 'crafted', headerName: t('economy.columns.crafted'), type: 'boolean', width: 90, editable: true },
+            { field: 'deloot', headerName: t('economy.columns.deloot'), type: 'boolean', width: 90, editable: true },
         ],
-        [categoryOptions]
+        [categoryOptions, t],
     );
 
     const searchColumns: GridColDef<EconomyRow>[] = useMemo(
         () => [
             {
                 field: '__fileKey',
-                headerName: 'Файл',
+                headerName: t('economy.columns.file'),
                 width: 200,
                 valueGetter: (value: string) => humanizeFileLabel(value),
             },
             ...columns,
         ],
-        [columns]
+        [columns, t],
     );
 
     const handleRowUpdate = (newRow: EconomyRow, oldRow: EconomyRow) => {
@@ -356,7 +368,7 @@ export const TypesXmlView = () => {
             const fileRows = rows.filter((r) => r.__sourcePath === sourcePath);
             const xml = serializeTypesXml(rowsToEntries(fileRows));
             const res = await window.api.writeFile(sourcePath, xml);
-            if (!res.success) failures.push(`${basenamePath(sourcePath)}: ${res.error ?? 'ошибка записи'}`);
+            if (!res.success) failures.push(`${basenamePath(sourcePath)}: ${res.error ?? t('economy.saveError')}`);
         }
         setSaving(false);
         if (failures.length > 0) {
@@ -393,7 +405,7 @@ export const TypesXmlView = () => {
             <Stack sx={{ height: '100%', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <CircularProgress size={28} />
                 <Typography color="text.secondary">
-                    {status === 'detecting' ? 'Ищем cfgeconomycore.xml в папке проекта…' : 'Загружаем файлы экономики…'}
+                    {status === 'detecting' ? t('economy.detecting') : t('economy.loadingFiles')}
                 </Typography>
             </Stack>
         );
@@ -406,7 +418,7 @@ export const TypesXmlView = () => {
                     {errorMessage}
                 </Alert>
                 <Button startIcon={<RefreshIcon />} onClick={detect}>
-                    Повторить поиск
+                    {t('common.retry')}
                 </Button>
             </Box>
         );
@@ -416,11 +428,12 @@ export const TypesXmlView = () => {
         return (
             <Box sx={{ p: 3, maxWidth: 560 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                    Не удалось однозначно найти cfgeconomycore.xml
+                    {t('economy.pickerTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    В папке проекта {candidates.length === 0 ? 'не найдено файлов' : `найдено ${candidates.length} файлов`}.
-                    Выберите нужный или укажите файл вручную.
+                    {t('common.inProjectFolder')}{' '}
+                    {candidates.length === 0 ? t('economy.pickerNotFound') : t('economy.pickerFound', { count: candidates.length })}.{' '}
+                    {t('common.chooseOrBrowse')}
                 </Typography>
 
                 {candidates.length > 0 && (
@@ -446,7 +459,7 @@ export const TypesXmlView = () => {
                 )}
 
                 <Button variant="contained" onClick={handleManualBrowse}>
-                    Выбрать файл вручную
+                    {t('common.browseManually')}
                 </Button>
             </Box>
         );
@@ -469,15 +482,15 @@ export const TypesXmlView = () => {
             >
                 <Box sx={{ minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                        Экономика
+                        {t('economy.title')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap title={economyCorePath ?? ''}>
-                        {rows.length} записей в {new Set(rows.map((r) => r.__fileKey)).size} файлах
+                        {t('economy.recordsInFiles', { count: rows.length, files: new Set(rows.map((r) => r.__fileKey)).size })}
                     </Typography>
                 </Box>
                 <TextField
                     size="small"
-                    placeholder="Поиск по названию…"
+                    placeholder={t('economy.searchPlaceholder')}
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     sx={{ minWidth: 260 }}
@@ -492,10 +505,16 @@ export const TypesXmlView = () => {
                     }}
                 />
                 <Button size="small" onClick={detect}>
-                    Сменить файл
+                    {t('common.changeFile')}
                 </Button>
-                <Button size="small" variant="contained" startIcon={<SaveIcon />} disabled={!isDirty || saving} onClick={handleSave}>
-                    Сохранить {isDirty && `(${dirtySourcePaths.size})`}
+                <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={!isDirty || saving}
+                    onClick={handleSave}
+                >
+                    {t('common.save')} {isDirty && `(${dirtySourcePaths.size})`}
                 </Button>
             </Stack>
 
@@ -508,9 +527,9 @@ export const TypesXmlView = () => {
                     )}
                     {loadWarnings.length > 0 && (
                         <Alert severity="warning" sx={{ mb: 2 }}>
-                            <AlertTitle>Не удалось загрузить {loadWarnings.length} файлов</AlertTitle>
+                            <AlertTitle>{t('economy.loadWarningsTitle', { count: loadWarnings.length })}</AlertTitle>
                             {loadWarnings.slice(0, 10).join('; ')}
-                            {loadWarnings.length > 10 && ` и ещё ${loadWarnings.length - 10}…`}
+                            {loadWarnings.length > 10 && ` ${t('economy.andMore', { count: loadWarnings.length - 10 })}`}
                         </Alert>
                     )}
                 </Box>
@@ -519,7 +538,7 @@ export const TypesXmlView = () => {
             {isSearching ? (
                 <Box sx={{ flex: 1, minHeight: 0, p: 2, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        Найдено {filteredRows.length} записей
+                        {t('economy.foundCount', { count: filteredRows.length })}
                     </Typography>
                     <Box sx={{ flex: 1, minHeight: 0 }}>
                         <DataGrid
@@ -539,7 +558,7 @@ export const TypesXmlView = () => {
                 <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
                     {fileGroups.length === 0 && (
                         <Typography color="text.secondary" sx={{ p: 2 }}>
-                            Ничего не найдено
+                            {t('economy.nothingFound')}
                         </Typography>
                     )}
 
@@ -584,20 +603,31 @@ export const TypesXmlView = () => {
                                                     key={catKey}
                                                     expanded={catExpanded}
                                                     onChange={(_, expanded) =>
-                                                        setExpandedCategories((prev) => ({ ...prev, [catKey]: expanded }))
+                                                        setExpandedCategories((prev) => ({
+                                                            ...prev,
+                                                            [catKey]: expanded,
+                                                        }))
                                                     }
                                                     disableGutters
                                                     sx={{ ml: 1, boxShadow: 'none', bgcolor: 'action.hover' }}
                                                 >
                                                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                                         <Typography variant="body2">{catGroup.category}</Typography>
-                                                        <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            sx={{ ml: 1 }}
+                                                        >
                                                             ({catGroup.rows.length})
                                                         </Typography>
                                                     </AccordionSummary>
                                                     <AccordionDetails sx={{ p: 0 }}>
                                                         {catExpanded && (
-                                                            <CategoryGrid rows={catGroup.rows} columns={columns} onRowUpdate={handleRowUpdate} />
+                                                            <CategoryGrid
+                                                                rows={catGroup.rows}
+                                                                columns={columns}
+                                                                onRowUpdate={handleRowUpdate}
+                                                            />
                                                         )}
                                                     </AccordionDetails>
                                                 </Accordion>
@@ -614,7 +644,7 @@ export const TypesXmlView = () => {
                 open={savedNotice}
                 autoHideDuration={2500}
                 onClose={() => setSavedNotice(false)}
-                message="Сохранено"
+                message={t('common.saved')}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             />
         </Box>

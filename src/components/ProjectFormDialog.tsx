@@ -21,22 +21,11 @@ import {
     Typography,
 } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import { useTranslation } from 'react-i18next';
 import { Project, SetupType, TraderMod } from '../types';
 import { DAYZ_MAPS, findDayzMapByLabel, getDayzMapPath } from '../data/dayzMaps';
 
 const MAP_LABELS = DAYZ_MAPS.map((m) => m.label);
-
-const SETUP_TYPE_OPTIONS: { value: SetupType; label: string }[] = [
-    { value: 'blank', label: 'Новый / вручную скопированные файлы (Blank)' },
-    { value: 'existing', label: 'Существующий проект (Existing)' },
-];
-
-const TRADER_OPTIONS: { value: TraderMod; label: string }[] = [
-    { value: 'none', label: 'Нет' },
-    { value: 'expansion', label: 'Expansion Market' },
-    { value: 'drJones', label: 'Dr Jones Trader' },
-    { value: 'traderPlus', label: 'Trader Plus' },
-];
 
 export interface ProjectFormValues {
     name: string;
@@ -92,7 +81,20 @@ interface ProjectFormDialogProps {
 }
 
 export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmit }: ProjectFormDialogProps) => {
+    const { t } = useTranslation();
     const [values, setValues] = useState<ProjectFormValues>(emptyValues);
+
+    const SETUP_TYPE_OPTIONS: { value: SetupType; label: string }[] = [
+        { value: 'blank', label: t('projectForm.setupTypeBlank') },
+        { value: 'existing', label: t('projectForm.setupTypeExisting') },
+    ];
+
+    const TRADER_OPTIONS: { value: TraderMod; label: string }[] = [
+        { value: 'none', label: t('projectForm.traderNone') },
+        { value: 'expansion', label: 'Expansion Market' },
+        { value: 'drJones', label: 'Dr Jones Trader' },
+        { value: 'traderPlus', label: 'Trader Plus' },
+    ];
 
     useEffect(() => {
         if (!open) return;
@@ -117,12 +119,12 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>{mode === 'create' ? 'Новый проект' : 'Редактирование проекта'}</DialogTitle>
+            <DialogTitle>{mode === 'create' ? t('projectForm.newProject') : t('projectForm.editProject')}</DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={2.5} sx={{ mt: 0.5 }}>
                     <TextField
                         select
-                        label="Тип настройки"
+                        label={t('projectForm.setupType')}
                         value={values.setupType}
                         onChange={(e) => handleChange('setupType', e.target.value as SetupType)}
                         fullWidth
@@ -135,7 +137,7 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                     </TextField>
 
                     <TextField
-                        label="Название проекта"
+                        label={t('projectForm.projectName')}
                         value={values.name}
                         onChange={(e) => handleChange('name', e.target.value)}
                         fullWidth
@@ -143,7 +145,7 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                     />
 
                     <TextField
-                        label="Папка проекта"
+                        label={t('projectForm.projectFolder')}
                         value={values.path}
                         onChange={(e) => handleChange('path', e.target.value)}
                         fullWidth
@@ -153,7 +155,7 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                             input: {
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton onClick={handleBrowseFolder} edge="end" aria-label="Выбрать папку">
+                                        <IconButton onClick={handleBrowseFolder} edge="end" aria-label={t('projectForm.browseFolder')}>
                                             <FolderOpenIcon />
                                         </IconButton>
                                     </InputAdornment>
@@ -164,17 +166,17 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
 
                     <Stack direction="row" spacing={2}>
                         <TextField
-                            label="Папка профиля"
+                            label={t('projectForm.profileFolder')}
                             value={values.profileFolderName}
                             onChange={(e) => handleChange('profileFolderName', e.target.value)}
-                            helperText="Обычно profiles"
+                            helperText={t('projectForm.profileFolderHelper')}
                             fullWidth
                         />
                         <TextField
-                            label="Папка миссии"
+                            label={t('projectForm.missionFolder')}
                             value={values.missionFolder}
                             onChange={(e) => handleChange('missionFolder', e.target.value)}
-                            helperText="Напр. dayzOffline.chernarusplus"
+                            helperText={t('projectForm.missionFolderHelper')}
                             fullWidth
                         />
                     </Stack>
@@ -199,11 +201,11 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                             }}
                             sx={{ flex: 1 }}
                             renderInput={(params) => (
-                                <TextField {...params} label="Карта" helperText="Выберите из списка — размер подставится сам" />
+                                <TextField {...params} label={t('projectForm.map')} helperText={t('projectForm.mapHelper')} />
                             )}
                         />
                         <TextField
-                            label="Размер карты"
+                            label={t('projectForm.mapSize')}
                             type="number"
                             value={values.mapSize}
                             onChange={(e) => handleChange('mapSize', Number(e.target.value) || 0)}
@@ -212,15 +214,15 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                     </Stack>
 
                     <TextField
-                        label="Путь к карте"
+                        label={t('projectForm.mapPath')}
                         value={values.mapPath}
                         onChange={(e) => handleChange('mapPath', e.target.value)}
-                        helperText="Напр. \Maps\chernarusplus_Map.png — подставляется автоматически при выборе карты"
+                        helperText={t('projectForm.mapPathHelper')}
                         fullWidth
                     />
 
                     <FormControl>
-                        <FormLabel>Трейдеры</FormLabel>
+                        <FormLabel>{t('projectForm.traders')}</FormLabel>
                         <RadioGroup
                             row
                             value={values.traders}
@@ -240,23 +242,22 @@ export const ProjectFormDialog = ({ open, mode, initialProject, onClose, onSubmi
                                 onChange={(e) => handleChange('createBackups', e.target.checked)}
                             />
                         }
-                        label="Создавать резервные копии при сохранении"
+                        label={t('projectForm.createBackups')}
                     />
 
                     {mode === 'create' && (
                         <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, p: 1.5 }}>
                             <Typography variant="caption" color="text.secondary">
-                                Папка проекта — корень миссии/сервера. Папка профиля — куда мод пишет логи и конфиги.
-                                Папка миссии — имя подпапки в mpmissions, с которой вы работаете.
+                                {t('projectForm.infoText')}
                             </Typography>
                         </Box>
                     )}
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Отмена</Button>
+                <Button onClick={onClose}>{t('common.cancel')}</Button>
                 <Button variant="contained" disabled={!isValid} onClick={() => onSubmit(values)}>
-                    {mode === 'create' ? 'Создать проект' : 'Сохранить изменения'}
+                    {mode === 'create' ? t('projectForm.create') : t('projectForm.saveChanges')}
                 </Button>
             </DialogActions>
         </Dialog>

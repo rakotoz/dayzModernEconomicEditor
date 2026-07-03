@@ -6,6 +6,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import EventIcon from '@mui/icons-material/Event';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { setCurrentConfig, toggleSidebarCollapsed } from '../store/slices/appSlice';
 import { RootState } from '../store/store';
@@ -16,25 +17,40 @@ import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
 
-const SECTIONS = [
-    {
-        title: 'Сервер',
-        items: [{ id: SERVER_CONFIG_ID, name: 'Параметры сервера', icon: <DnsIcon fontSize="small" /> }],
-    },
-    {
-        title: 'Экономика',
-        items: [{ id: ECONOMY_CONFIG_ID, name: 'Экономика (types.xml)', label: 'Типы предметов', icon: <TableChartIcon fontSize="small" /> }],
-    },
-    {
-        title: 'События',
-        items: [{ id: EVENTS_CONFIG_ID, name: 'События (events.xml)', label: 'События', icon: <EventIcon fontSize="small" /> }],
-    },
-];
-
 export const Sidebar = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const currentConfig = useAppSelector((state: RootState) => state.app.currentConfig);
     const collapsed = useAppSelector((state: RootState) => state.app.sidebarCollapsed);
+
+    const SECTIONS = [
+        {
+            title: t('sidebar.server'),
+            items: [{ id: SERVER_CONFIG_ID, name: t('sidebar.serverParams'), icon: <DnsIcon fontSize="small" /> }],
+        },
+        {
+            title: t('sidebar.economy'),
+            items: [
+                {
+                    id: ECONOMY_CONFIG_ID,
+                    name: t('sidebar.economyFull'),
+                    label: t('sidebar.itemTypes'),
+                    icon: <TableChartIcon fontSize="small" />,
+                },
+            ],
+        },
+        {
+            title: t('sidebar.events'),
+            items: [
+                {
+                    id: EVENTS_CONFIG_ID,
+                    name: t('sidebar.eventsFull'),
+                    label: t('sidebar.events'),
+                    icon: <EventIcon fontSize="small" />,
+                },
+            ],
+        },
+    ];
 
     return (
         <Box
@@ -54,7 +70,7 @@ export const Sidebar = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', p: 1 }}>
                 {!collapsed && (
                     <Typography variant="h6" sx={{ fontWeight: 'bold', pl: 1 }}>
-                        Конфиги
+                        {t('sidebar.configs')}
                     </Typography>
                 )}
                 <IconButton size="small" onClick={() => dispatch(toggleSidebarCollapsed())}>

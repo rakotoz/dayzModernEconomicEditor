@@ -17,6 +17,7 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, updateProject } from '../store/slices/appSlice';
 import {
@@ -29,12 +30,12 @@ import {
 
 type ViewStatus = 'detecting' | 'picker' | 'loading' | 'ready' | 'error';
 
-const CFG_FILTER = [{ name: 'Конфиги сервера', extensions: ['cfg'] }];
-
 const basename = (filePath: string) => filePath.split(/[\\/]/).pop() ?? filePath;
 
 export const ServerConfigView = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
+    const CFG_FILTER = [{ name: t('server.fileFilterName'), extensions: ['cfg'] }];
     const project = useAppSelector(selectCurrentProject);
 
     const [status, setStatus] = useState<ViewStatus>('detecting');
@@ -53,7 +54,7 @@ export const ServerConfigView = () => {
         setErrorMessage(null);
         const res = await window.api.readFile(path);
         if (!res.success || res.data === undefined) {
-            setErrorMessage(res.error ?? 'Не удалось прочитать файл');
+            setErrorMessage(res.error ?? t('server.readFileError'));
             setStatus('error');
             return;
         }
@@ -74,7 +75,7 @@ export const ServerConfigView = () => {
         setErrorMessage(null);
         const res = await window.api.findFilesByExtension(project.path, ['cfg']);
         if (!res.success || !res.data) {
-            setErrorMessage(res.error ?? 'Не удалось просканировать папку проекта');
+            setErrorMessage(res.error ?? t('server.scanError'));
             setStatus('error');
             return;
         }
@@ -135,7 +136,7 @@ export const ServerConfigView = () => {
         const res = await window.api.writeFile(filePath, patched);
         setSaving(false);
         if (!res.success) {
-            setSaveError(res.error ?? 'Не удалось сохранить файл');
+            setSaveError(res.error ?? t('server.saveError'));
             return;
         }
         setRawText(patched);
@@ -149,9 +150,7 @@ export const ServerConfigView = () => {
         return (
             <Stack sx={{ height: '100%', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
                 <CircularProgress size={28} />
-                <Typography color="text.secondary">
-                    {status === 'detecting' ? 'Ищем serverDZ.cfg в папке проекта…' : 'Загружаем файл…'}
-                </Typography>
+                <Typography color="text.secondary">{status === 'detecting' ? t('server.detecting') : t('server.loading')}</Typography>
             </Stack>
         );
     }
@@ -163,7 +162,7 @@ export const ServerConfigView = () => {
                     {errorMessage}
                 </Alert>
                 <Button startIcon={<RefreshIcon />} onClick={detect}>
-                    Повторить поиск
+                    {t('common.retry')}
                 </Button>
             </Box>
         );
@@ -173,11 +172,12 @@ export const ServerConfigView = () => {
         return (
             <Box sx={{ p: 3, maxWidth: 560 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                    Не удалось однозначно найти serverDZ.cfg
+                    {t('server.pickerTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    В папке проекта {candidates.length === 0 ? 'не найдено .cfg файлов' : `найдено ${candidates.length} .cfg файлов`}.
-                    Выберите нужный или укажите файл вручную.
+                    {t('common.inProjectFolder')}{' '}
+                    {candidates.length === 0 ? t('server.pickerNotFound') : t('server.pickerFound', { count: candidates.length })}.{' '}
+                    {t('common.chooseOrBrowse')}
                 </Typography>
 
                 {candidates.length > 0 && (
@@ -203,7 +203,7 @@ export const ServerConfigView = () => {
                 )}
 
                 <Button variant="contained" onClick={handleManualBrowse}>
-                    Выбрать файл вручную
+                    {t('common.browseManually')}
                 </Button>
             </Box>
         );
@@ -225,7 +225,7 @@ export const ServerConfigView = () => {
             >
                 <Box sx={{ minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                        Параметры сервера
+                        {t('server.title')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap title={filePath ?? ''}>
                         {filePath}
@@ -233,7 +233,7 @@ export const ServerConfigView = () => {
                 </Box>
                 <Stack direction="row" spacing={1}>
                     <Button size="small" onClick={handleChangeFile}>
-                        Сменить файл
+                        {t('common.changeFile')}
                     </Button>
                     <Button
                         size="small"
@@ -242,7 +242,7 @@ export const ServerConfigView = () => {
                         disabled={!isDirty || saving}
                         onClick={handleSave}
                     >
-                        Сохранить
+                        {t('common.save')}
                     </Button>
                 </Stack>
             </Stack>
@@ -259,7 +259,7 @@ export const ServerConfigView = () => {
                         return (
                             <Paper key={group} variant="outlined" sx={{ p: 2 }}>
                                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                    {group}
+                                    {t(`server.groups.${group}`)}
                                 </Typography>
                                 <Box
                                     sx={{
@@ -272,6 +272,8 @@ export const ServerConfigView = () => {
                                     {fields.map((field) => {
                                         const value = values[field.key];
                                         const notFound = value === undefined;
+                                        const label = t(`server.fields.${field.key}.label`);
+                                        const helperText = t(`server.fields.${field.key}.helper`);
                                         if (field.type === 'boolean') {
                                             return (
                                                 <FormControlLabel
@@ -280,25 +282,29 @@ export const ServerConfigView = () => {
                                                     control={
                                                         <Switch
                                                             checked={Boolean(value)}
-                                                            onChange={(e) => handleFieldChange(field.key, e.target.checked)}
+                                                            onChange={(e) =>
+                                                                handleFieldChange(field.key, e.target.checked)
+                                                            }
                                                         />
                                                     }
-                                                    label={notFound ? `${field.label} (нет в файле)` : field.label}
+                                                    label={notFound ? `${label} (${t('server.notInFile')})` : label}
                                                 />
                                             );
                                         }
                                         return (
                                             <TextField
                                                 key={field.key}
-                                                label={field.label}
+                                                label={label}
                                                 type={field.type === 'number' ? 'number' : 'text'}
                                                 value={notFound ? '' : value}
                                                 disabled={notFound}
-                                                helperText={notFound ? 'Не найдено в файле' : field.helperText}
+                                                helperText={notFound ? t('server.notInFile') : helperText}
                                                 onChange={(e) =>
                                                     handleFieldChange(
                                                         field.key,
-                                                        field.type === 'number' ? Number(e.target.value) || 0 : e.target.value
+                                                        field.type === 'number'
+                                                            ? Number(e.target.value) || 0
+                                                            : e.target.value,
                                                     )
                                                 }
                                                 fullWidth
@@ -316,7 +322,7 @@ export const ServerConfigView = () => {
                 open={savedNotice}
                 autoHideDuration={2500}
                 onClose={() => setSavedNotice(false)}
-                message="Сохранено"
+                message={t('common.saved')}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             />
         </Box>

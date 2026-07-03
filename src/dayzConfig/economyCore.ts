@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export const ECONOMY_CONFIG_ID = 'economy-config';
 
 export interface CeTypesFileInfo {
@@ -11,7 +13,7 @@ export interface CeTypesFileInfo {
 export const parseEconomyCoreTypesFiles = (raw: string): CeTypesFileInfo[] => {
     const doc = new DOMParser().parseFromString(raw, 'text/xml');
     if (doc.getElementsByTagName('parsererror').length > 0) {
-        throw new Error('Не удалось разобрать cfgeconomycore.xml — файл повреждён или не является корректным XML');
+        throw new Error(i18n.t('economy.parseCoreError'));
     }
     const result: CeTypesFileInfo[] = [];
     const ceEls = Array.from(doc.getElementsByTagName('ce'));

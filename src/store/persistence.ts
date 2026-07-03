@@ -2,11 +2,16 @@ import { Project } from '../types';
 
 const STORAGE_KEY = 'dayz-editor-projects-state';
 
+export type ThemeMode = 'light' | 'dark';
+export type Language = 'ru' | 'en';
+
 export interface PersistedState {
     projects: Project[];
     currentProjectId: string | null;
     navCollapsed: boolean;
     sidebarCollapsed: boolean;
+    themeMode: ThemeMode;
+    language: Language;
 }
 
 export const loadPersistedState = (): Partial<PersistedState> => {

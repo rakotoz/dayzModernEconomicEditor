@@ -5,22 +5,24 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { addProject, removeProject, setCurrentProjectId, updateProject } from '../store/slices/appSlice';
 import { Project } from '../types';
 import { ProjectFormDialog, ProjectFormValues } from '../components/ProjectFormDialog';
 
-const TRADER_LABELS: Record<Project['traders'], string> = {
-    none: 'Без трейдеров',
-    expansion: 'Expansion Market',
-    drJones: 'Dr Jones Trader',
-    traderPlus: 'Trader Plus',
-};
-
 export const ProjectsView = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const projects = useAppSelector((state) => state.app.projects);
+
+    const TRADER_LABELS: Record<Project['traders'], string> = {
+        none: t('projects.traderNone'),
+        expansion: 'Expansion Market',
+        drJones: 'Dr Jones Trader',
+        traderPlus: 'Trader Plus',
+    };
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -62,18 +64,18 @@ export const ProjectsView = () => {
     return (
         <Box sx={{ p: 4, height: '100%', overflow: 'auto' }}>
             <Stack direction="row" sx={{ mb: 3, alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4">Проекты</Typography>
+                <Typography variant="h4">{t('projects.title')}</Typography>
                 <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreateDialog}>
-                    Добавить проект
+                    {t('projects.addProject')}
                 </Button>
             </Stack>
 
             {projects.length === 0 ? (
                 <Box sx={{ textAlign: 'center', mt: 10, color: 'text.secondary' }}>
                     <Typography variant="h6" sx={{ mb: 1 }}>
-                        Пока нет ни одного проекта
+                        {t('projects.empty')}
                     </Typography>
-                    <Typography variant="body2">Нажмите «Добавить проект», чтобы создать проект миссии DayZ</Typography>
+                    <Typography variant="body2">{t('projects.emptyHint')}</Typography>
                 </Box>
             ) : (
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
@@ -96,7 +98,7 @@ export const ProjectsView = () => {
                                 </Typography>
                                 {project.missionFolder && (
                                     <Typography variant="caption" color="text.secondary" noWrap display="block">
-                                        Миссия: {project.missionFolder}
+                                        {t('projects.mission')}: {project.missionFolder}
                                     </Typography>
                                 )}
                                 <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
@@ -108,20 +110,20 @@ export const ProjectsView = () => {
                             </CardContent>
                             <CardActions sx={{ justifyContent: 'space-between' }}>
                                 <Button size="small" onClick={() => handleOpenProject(project.id)}>
-                                    Открыть
+                                    {t('projects.open')}
                                 </Button>
                                 <Box>
                                     <IconButton
                                         size="small"
                                         onClick={(e) => handleOpenEditDialog(project, e)}
-                                        aria-label="Редактировать проект"
+                                        aria-label={t('projects.editAria')}
                                     >
                                         <EditIcon fontSize="small" />
                                     </IconButton>
                                     <IconButton
                                         size="small"
                                         onClick={(e) => handleRemoveProject(project.id, e)}
-                                        aria-label="Удалить проект"
+                                        aria-label={t('projects.deleteAria')}
                                     >
                                         <DeleteIcon fontSize="small" />
                                     </IconButton>

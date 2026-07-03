@@ -1,6 +1,6 @@
 import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit';
 import { Project, ConfigFile } from '../../types';
-import { loadPersistedState } from '../persistence';
+import { loadPersistedState, ThemeMode, Language } from '../persistence';
 
 export interface AppState {
     projects: Project[];
@@ -9,6 +9,8 @@ export interface AppState {
     mods: any[];
     navCollapsed: boolean;
     sidebarCollapsed: boolean;
+    themeMode: ThemeMode;
+    language: Language;
 }
 
 const persisted = loadPersistedState();
@@ -20,6 +22,8 @@ const initialState: AppState = {
     mods: [],
     navCollapsed: persisted.navCollapsed ?? false,
     sidebarCollapsed: persisted.sidebarCollapsed ?? false,
+    themeMode: persisted.themeMode ?? 'dark',
+    language: persisted.language ?? 'ru',
 };
 
 const appSlice = createSlice({
@@ -68,6 +72,12 @@ const appSlice = createSlice({
         toggleSidebarCollapsed: (state: AppState) => {
             state.sidebarCollapsed = !state.sidebarCollapsed;
         },
+        toggleThemeMode: (state: AppState) => {
+            state.themeMode = state.themeMode === 'dark' ? 'light' : 'dark';
+        },
+        setLanguage: (state: AppState, action: PayloadAction<Language>) => {
+            state.language = action.payload;
+        },
     },
 });
 
@@ -80,6 +90,8 @@ export const {
     setMods,
     toggleNavCollapsed,
     toggleSidebarCollapsed,
+    toggleThemeMode,
+    setLanguage,
 } = appSlice.actions;
 
 export const selectCurrentProject = (state: { app: AppState }): Project | null =>

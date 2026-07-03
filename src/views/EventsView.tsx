@@ -27,6 +27,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, updateProject } from '../store/slices/appSlice';
 import {
@@ -86,6 +87,7 @@ type ViewStatus = 'detecting' | 'loading' | 'ready' | 'picker' | 'error';
 
 export const EventsView = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const project = useAppSelector(selectCurrentProject);
 
     const [status, setStatus] = useState<ViewStatus>('detecting');
@@ -107,7 +109,7 @@ export const EventsView = () => {
         setErrorMessage(null);
         const res = await window.api.readFile(path);
         if (!res.success || res.data === undefined) {
-            setErrorMessage(res.error ?? 'Не удалось прочитать файл');
+            setErrorMessage(res.error ?? t('events.readFileError'));
             setStatus('error');
             return;
         }
@@ -122,7 +124,7 @@ export const EventsView = () => {
                 dispatch(updateProject({ id: project.id, changes: { eventsXmlPath: path } }));
             }
         } catch (e: any) {
-            setErrorMessage(e.message ?? 'Не удалось разобрать events.xml');
+            setErrorMessage(e.message ?? t('events.parseFileError'));
             setStatus('error');
         }
     };
@@ -133,7 +135,7 @@ export const EventsView = () => {
         setErrorMessage(null);
         const res = await window.api.findFileRecursive(project.path, 'events.xml');
         if (!res.success || !res.data) {
-            setErrorMessage(res.error ?? 'Не удалось просканировать папку проекта');
+            setErrorMessage(res.error ?? t('events.scanError'));
             setStatus('error');
             return;
         }
@@ -174,7 +176,9 @@ export const EventsView = () => {
 
     const updateChild = (childId: string, patch: Partial<ChildRow>) => {
         if (!selectedEvent) return;
-        updateSelected({ children: selectedEvent.children.map((c) => (c.childId === childId ? { ...c, ...patch } : c)) });
+        updateSelected({
+            children: selectedEvent.children.map((c) => (c.childId === childId ? { ...c, ...patch } : c)),
+        });
     };
 
     const addChild = () => {
@@ -209,7 +213,7 @@ export const EventsView = () => {
         const res = await window.api.writeFile(filePath, xml);
         setSaving(false);
         if (!res.success) {
-            setSaveError(res.error ?? 'Не удалось сохранить файл');
+            setSaveError(res.error ?? t('events.saveError'));
             return;
         }
         setDirty(false);
@@ -234,9 +238,7 @@ export const EventsView = () => {
         return (
             <Stack sx={{ height: '100%', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <CircularProgress size={28} />
-                <Typography color="text.secondary">
-                    {status === 'detecting' ? 'Ищем events.xml в папке проекта…' : 'Загружаем файл…'}
-                </Typography>
+                <Typography color="text.secondary">{status === 'detecting' ? t('events.detecting') : t('events.loading')}</Typography>
             </Stack>
         );
     }
@@ -248,7 +250,7 @@ export const EventsView = () => {
                     {errorMessage}
                 </Alert>
                 <Button startIcon={<RefreshIcon />} onClick={detect}>
-                    Повторить поиск
+                    {t('common.retry')}
                 </Button>
             </Box>
         );
@@ -258,11 +260,12 @@ export const EventsView = () => {
         return (
             <Box sx={{ p: 3, maxWidth: 560 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                    Не удалось однозначно найти events.xml
+                    {t('events.pickerTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    В папке проекта {candidates.length === 0 ? 'не найдено файлов' : `найдено ${candidates.length} файлов`}.
-                    Выберите нужный или укажите файл вручную.
+                    {t('common.inProjectFolder')}{' '}
+                    {candidates.length === 0 ? t('events.pickerNotFound') : t('events.pickerFound', { count: candidates.length })}.{' '}
+                    {t('common.chooseOrBrowse')}
                 </Typography>
 
                 {candidates.length > 0 && (
@@ -288,7 +291,7 @@ export const EventsView = () => {
                 )}
 
                 <Button variant="contained" onClick={handleManualBrowse}>
-                    Выбрать файл вручную
+                    {t('common.browseManually')}
                 </Button>
             </Box>
         );
@@ -311,17 +314,23 @@ export const EventsView = () => {
             >
                 <Box sx={{ minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                        События
+                        {t('events.title')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap title={filePath ?? ''}>
-                        {filePath} • {events.length} событий
+                        {filePath} • {t('events.recordsCount', { count: events.length })}
                     </Typography>
                 </Box>
                 <Button size="small" onClick={detect}>
-                    Сменить файл
+                    {t('common.changeFile')}
                 </Button>
-                <Button size="small" variant="contained" startIcon={<SaveIcon />} disabled={!dirty || saving} onClick={handleSave}>
-                    Сохранить
+                <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    disabled={!dirty || saving}
+                    onClick={handleSave}
+                >
+                    {t('common.save')}
                 </Button>
             </Stack>
 
@@ -332,12 +341,21 @@ export const EventsView = () => {
             )}
 
             <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
-                <Box sx={{ width: 280, flexShrink: 0, borderRight: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column' }}>
+                <Box
+                    sx={{
+                        width: 280,
+                        flexShrink: 0,
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
                     <Box sx={{ p: 1.5 }}>
                         <TextField
                             size="small"
                             fullWidth
-                            placeholder="Поиск ивента…"
+                            placeholder={t('events.searchPlaceholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             slotProps={{
@@ -353,31 +371,41 @@ export const EventsView = () => {
                     </Box>
                     <List sx={{ flex: 1, overflow: 'auto', py: 0 }}>
                         {filteredEvents.map((e) => (
-                            <ListItemButton key={e.id} selected={e.id === selectedId} onClick={() => setSelectedId(e.id)}>
-                                <ListItemText primary={e.name || '(без имени)'} />
+                            <ListItemButton
+                                key={e.id}
+                                selected={e.id === selectedId}
+                                onClick={() => setSelectedId(e.id)}
+                            >
+                                <ListItemText primary={e.name || t('events.noName')} />
                             </ListItemButton>
                         ))}
                     </List>
                     <Divider />
                     <Stack direction="row" spacing={1} sx={{ p: 1 }}>
                         <Button size="small" startIcon={<AddIcon />} onClick={handleAddEvent}>
-                            Добавить
+                            {t('common.add')}
                         </Button>
-                        <Button size="small" color="error" startIcon={<DeleteIcon />} disabled={!selectedEvent} onClick={handleRemoveEvent}>
-                            Удалить
+                        <Button
+                            size="small"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            disabled={!selectedEvent}
+                            onClick={handleRemoveEvent}
+                        >
+                            {t('common.delete')}
                         </Button>
                     </Stack>
                 </Box>
 
                 <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
                     {!selectedEvent ? (
-                        <Typography color="text.secondary">Выберите ивент слева или добавьте новый</Typography>
+                        <Typography color="text.secondary">{t('events.selectEventHint')}</Typography>
                     ) : (
                         <Stack spacing={3}>
                             <Paper variant="outlined" sx={{ p: 2 }}>
                                 <Stack direction="row" spacing={2} sx={{ mb: 2, alignItems: 'center' }}>
                                     <TextField
-                                        label="Название"
+                                        label={t('events.fields.name')}
                                         value={selectedEvent.name}
                                         onChange={(e) => updateSelected({ name: e.target.value })}
                                         sx={{ flex: 1 }}
@@ -389,91 +417,103 @@ export const EventsView = () => {
                                                 onChange={(e) => updateSelected({ active: e.target.checked })}
                                             />
                                         }
-                                        label="Активен"
+                                        label={t('events.fields.active')}
                                     />
                                 </Stack>
 
-                                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 2 }}>
+                                <Box
+                                    sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                                        gap: 2,
+                                    }}
+                                >
                                     <TextField
-                                        label="Nominal"
+                                        label={t('events.fields.nominal')}
                                         type="number"
                                         value={selectedEvent.nominal}
                                         onChange={(e) => updateSelected({ nominal: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Min"
+                                        label={t('events.fields.min')}
                                         type="number"
                                         value={selectedEvent.min}
                                         onChange={(e) => updateSelected({ min: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Max"
+                                        label={t('events.fields.max')}
                                         type="number"
                                         value={selectedEvent.max}
                                         onChange={(e) => updateSelected({ max: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Lifetime"
+                                        label={t('events.fields.lifetime')}
                                         type="number"
                                         value={selectedEvent.lifetime}
                                         onChange={(e) => updateSelected({ lifetime: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Restock"
+                                        label={t('events.fields.restock')}
                                         type="number"
                                         value={selectedEvent.restock}
                                         onChange={(e) => updateSelected({ restock: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Safe radius"
+                                        label={t('events.fields.saferadius')}
                                         type="number"
                                         value={selectedEvent.saferadius}
                                         onChange={(e) => updateSelected({ saferadius: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
-                                        label="Distance radius"
+                                        label={t('events.fields.distanceradius')}
                                         type="number"
                                         value={selectedEvent.distanceradius}
-                                        onChange={(e) => updateSelected({ distanceradius: Number(e.target.value) || 0 })}
+                                        onChange={(e) =>
+                                            updateSelected({ distanceradius: Number(e.target.value) || 0 })
+                                        }
                                     />
                                     <TextField
-                                        label="Cleanup radius"
+                                        label={t('events.fields.cleanupradius')}
                                         type="number"
                                         value={selectedEvent.cleanupradius}
                                         onChange={(e) => updateSelected({ cleanupradius: Number(e.target.value) || 0 })}
                                     />
                                     <TextField
                                         select
-                                        label="Position"
+                                        label={t('events.fields.position')}
                                         value={selectedEvent.position}
                                         onChange={(e) => updateSelected({ position: e.target.value })}
                                     >
-                                        {Array.from(new Set([...EVENT_POSITION_OPTIONS, selectedEvent.position])).map((opt) => (
-                                            <MenuItem key={opt} value={opt}>
-                                                {opt}
-                                            </MenuItem>
-                                        ))}
+                                        {Array.from(new Set([...EVENT_POSITION_OPTIONS, selectedEvent.position])).map(
+                                            (opt) => (
+                                                <MenuItem key={opt} value={opt}>
+                                                    {opt}
+                                                </MenuItem>
+                                            ),
+                                        )}
                                     </TextField>
                                     <TextField
                                         select
-                                        label="Limit"
+                                        label={t('events.fields.limit')}
                                         value={selectedEvent.limit}
                                         onChange={(e) => updateSelected({ limit: e.target.value })}
                                     >
-                                        {Array.from(new Set([...EVENT_LIMIT_OPTIONS, selectedEvent.limit])).map((opt) => (
-                                            <MenuItem key={opt} value={opt}>
-                                                {opt}
-                                            </MenuItem>
-                                        ))}
+                                        {Array.from(new Set([...EVENT_LIMIT_OPTIONS, selectedEvent.limit])).map(
+                                            (opt) => (
+                                                <MenuItem key={opt} value={opt}>
+                                                    {opt}
+                                                </MenuItem>
+                                            ),
+                                        )}
                                     </TextField>
                                     <TextField
                                         select
-                                        label="Secondary"
+                                        label={t('events.fields.secondary')}
                                         value={selectedEvent.secondary}
                                         onChange={(e) => updateSelected({ secondary: e.target.value })}
                                     >
                                         <MenuItem value="">
-                                            <em>Нет</em>
+                                            <em>{t('events.fields.secondaryNone')}</em>
                                         </MenuItem>
                                         {secondaryOptions.map((opt) => (
                                             <MenuItem key={opt} value={opt}>
@@ -484,7 +524,7 @@ export const EventsView = () => {
                                 </Box>
 
                                 <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                                    Флаги
+                                    {t('events.flags')}
                                 </Typography>
                                 <Stack direction="row" spacing={1}>
                                     <FormControlLabel
@@ -518,52 +558,70 @@ export const EventsView = () => {
                             </Paper>
 
                             <Paper variant="outlined" sx={{ p: 2 }}>
-                                <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                                    <Typography variant="subtitle2">Children ({selectedEvent.children.length})</Typography>
+                                <Stack
+                                    direction="row"
+                                    sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
+                                >
+                                    <Typography variant="subtitle2">
+                                        {t('events.children', { count: selectedEvent.children.length })}
+                                    </Typography>
                                     <Button size="small" startIcon={<AddIcon />} onClick={addChild}>
-                                        Добавить child
+                                        {t('events.addChild')}
                                     </Button>
                                 </Stack>
                                 <Stack spacing={1.5}>
                                     {selectedEvent.children.map((c) => (
-                                        <Stack key={c.childId} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                                        <Stack
+                                            key={c.childId}
+                                            direction="row"
+                                            spacing={1}
+                                            sx={{ alignItems: 'center' }}
+                                        >
                                             <TextField
-                                                label="Type"
+                                                label={t('events.childFields.type')}
                                                 size="small"
                                                 value={c.type}
                                                 onChange={(e) => updateChild(c.childId, { type: e.target.value })}
                                                 sx={{ flex: 2 }}
                                             />
                                             <TextField
-                                                label="Min"
+                                                label={t('events.childFields.min')}
                                                 size="small"
                                                 type="number"
                                                 value={c.min}
-                                                onChange={(e) => updateChild(c.childId, { min: Number(e.target.value) || 0 })}
+                                                onChange={(e) =>
+                                                    updateChild(c.childId, { min: Number(e.target.value) || 0 })
+                                                }
                                                 sx={{ width: 90 }}
                                             />
                                             <TextField
-                                                label="Max"
+                                                label={t('events.childFields.max')}
                                                 size="small"
                                                 type="number"
                                                 value={c.max}
-                                                onChange={(e) => updateChild(c.childId, { max: Number(e.target.value) || 0 })}
+                                                onChange={(e) =>
+                                                    updateChild(c.childId, { max: Number(e.target.value) || 0 })
+                                                }
                                                 sx={{ width: 90 }}
                                             />
                                             <TextField
-                                                label="Loot Min"
+                                                label={t('events.childFields.lootMin')}
                                                 size="small"
                                                 type="number"
                                                 value={c.lootmin}
-                                                onChange={(e) => updateChild(c.childId, { lootmin: Number(e.target.value) || 0 })}
+                                                onChange={(e) =>
+                                                    updateChild(c.childId, { lootmin: Number(e.target.value) || 0 })
+                                                }
                                                 sx={{ width: 90 }}
                                             />
                                             <TextField
-                                                label="Loot Max"
+                                                label={t('events.childFields.lootMax')}
                                                 size="small"
                                                 type="number"
                                                 value={c.lootmax}
-                                                onChange={(e) => updateChild(c.childId, { lootmax: Number(e.target.value) || 0 })}
+                                                onChange={(e) =>
+                                                    updateChild(c.childId, { lootmax: Number(e.target.value) || 0 })
+                                                }
                                                 sx={{ width: 90 }}
                                             />
                                             <IconButton size="small" onClick={() => removeChild(c.childId)}>
@@ -573,7 +631,7 @@ export const EventsView = () => {
                                     ))}
                                     {selectedEvent.children.length === 0 && (
                                         <Typography variant="body2" color="text.secondary">
-                                            Нет children
+                                            {t('events.noChildren')}
                                         </Typography>
                                     )}
                                 </Stack>
@@ -587,7 +645,7 @@ export const EventsView = () => {
                 open={savedNotice}
                 autoHideDuration={2500}
                 onClose={() => setSavedNotice(false)}
-                message="Сохранено"
+                message={t('common.saved')}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             />
         </Box>

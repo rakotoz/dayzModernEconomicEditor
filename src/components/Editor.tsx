@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, TextField } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../store/hooks';
 import { RootState } from '../store/store';
 import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
@@ -10,12 +11,13 @@ import { TypesXmlView } from '../views/TypesXmlView';
 import { EventsView } from '../views/EventsView';
 
 export const Editor = () => {
+    const { t } = useTranslation();
     const currentConfig = useAppSelector((state: RootState) => state.app.currentConfig);
 
     if (!currentConfig) {
         return (
             <Box sx={{ p: 3, textAlign: 'center' }}>
-                <Typography>Выберите конфиг для редактирования</Typography>
+                <Typography>{t('editor.selectConfig')}</Typography>
             </Box>
         );
     }
