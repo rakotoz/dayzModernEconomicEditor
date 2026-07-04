@@ -18,6 +18,10 @@ export interface Project {
     economyCorePath?: string;
     eventsXmlPath?: string;
     eventSpawnsXmlPath?: string;
+    eventGroupsXmlPath?: string;
+    userDefinitionsPath?: string;
+    globalsXmlPath?: string;
+    playerSpawnsXmlPath?: string;
 }
 
 export interface ConfigFile {

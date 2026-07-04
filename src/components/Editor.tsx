@@ -7,10 +7,18 @@ import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
 import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
 import { EVENT_SPAWNS_CONFIG_ID } from '../dayzConfig/eventSpawnsXml';
+import { EVENT_GROUPS_CONFIG_ID } from '../dayzConfig/eventGroupsXml';
+import { USER_DEFINITIONS_CONFIG_ID } from '../dayzConfig/userDefinitions';
+import { GLOBALS_CONFIG_ID } from '../dayzConfig/globalsXml';
+import { PLAYER_SPAWNS_CONFIG_ID } from '../dayzConfig/playerSpawnPoints';
 import { ServerConfigView } from '../views/ServerConfigView';
 import { TypesXmlView } from '../views/TypesXmlView';
 import { EventsView } from '../views/EventsView';
 import { EventSpawnsView } from '../views/EventSpawnsView';
+import { EventGroupsView } from '../views/EventGroupsView';
+import { UserDefinitionsView } from '../views/UserDefinitionsView';
+import { GlobalsView } from '../views/GlobalsView';
+import { PlayerSpawnsView } from '../views/PlayerSpawnsView';
 
 export const Editor = () => {
     const { t } = useTranslation();
@@ -38,6 +46,22 @@ export const Editor = () => {
 
     if (currentConfig.id === EVENT_SPAWNS_CONFIG_ID) {
         return <EventSpawnsView />;
+    }
+
+    if (currentConfig.id === EVENT_GROUPS_CONFIG_ID) {
+        return <EventGroupsView />;
+    }
+
+    if (currentConfig.id === USER_DEFINITIONS_CONFIG_ID) {
+        return <UserDefinitionsView />;
+    }
+
+    if (currentConfig.id === GLOBALS_CONFIG_ID) {
+        return <GlobalsView />;
+    }
+
+    if (currentConfig.id === PLAYER_SPAWNS_CONFIG_ID) {
+        return <PlayerSpawnsView />;
     }
 
     return (

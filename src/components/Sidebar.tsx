@@ -5,6 +5,10 @@ import DnsIcon from '@mui/icons-material/Dns';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import EventIcon from '@mui/icons-material/Event';
 import PlaceIcon from '@mui/icons-material/Place';
+import WorkspacesIcon from '@mui/icons-material/Workspaces';
+import TuneIcon from '@mui/icons-material/Tune';
+import PublicIcon from '@mui/icons-material/Public';
+import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +19,10 @@ import { SERVER_CONFIG_ID } from '../dayzConfig/serverConfig';
 import { ECONOMY_CONFIG_ID } from '../dayzConfig/economyCore';
 import { EVENTS_CONFIG_ID } from '../dayzConfig/eventsXml';
 import { EVENT_SPAWNS_CONFIG_ID } from '../dayzConfig/eventSpawnsXml';
+import { EVENT_GROUPS_CONFIG_ID } from '../dayzConfig/eventGroupsXml';
+import { USER_DEFINITIONS_CONFIG_ID } from '../dayzConfig/userDefinitions';
+import { GLOBALS_CONFIG_ID } from '../dayzConfig/globalsXml';
+import { PLAYER_SPAWNS_CONFIG_ID } from '../dayzConfig/playerSpawnPoints';
 
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
@@ -28,7 +36,16 @@ export const Sidebar = () => {
     const SECTIONS = [
         {
             title: t('sidebar.server'),
-            items: [{ id: SERVER_CONFIG_ID, name: t('sidebar.serverParams'), icon: <DnsIcon fontSize="small" /> }],
+            items: [
+                { id: SERVER_CONFIG_ID, name: t('sidebar.serverParams'), icon: <DnsIcon fontSize="small" /> },
+                { id: GLOBALS_CONFIG_ID, name: t('sidebar.globalsFull'), label: t('sidebar.globals'), icon: <PublicIcon fontSize="small" /> },
+                {
+                    id: PLAYER_SPAWNS_CONFIG_ID,
+                    name: t('sidebar.playerSpawnsFull'),
+                    label: t('sidebar.playerSpawns'),
+                    icon: <PersonPinCircleIcon fontSize="small" />,
+                },
+            ],
         },
         {
             title: t('sidebar.economy'),
@@ -55,6 +72,23 @@ export const Sidebar = () => {
                     name: t('sidebar.eventSpawnsFull'),
                     label: t('sidebar.eventSpawns'),
                     icon: <PlaceIcon fontSize="small" />,
+                },
+                {
+                    id: EVENT_GROUPS_CONFIG_ID,
+                    name: t('sidebar.eventGroupsFull'),
+                    label: t('sidebar.eventGroups'),
+                    icon: <WorkspacesIcon fontSize="small" />,
+                },
+            ],
+        },
+        {
+            title: t('sidebar.definitions'),
+            items: [
+                {
+                    id: USER_DEFINITIONS_CONFIG_ID,
+                    name: t('sidebar.userDefinitionsFull'),
+                    label: t('sidebar.userDefinitions'),
+                    icon: <TuneIcon fontSize="small" />,
                 },
             ],
         },

@@ -5,9 +5,11 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Autocomplete,
     Box,
     Button,
     ButtonBase,
+    Chip,
     CircularProgress,
     Divider,
     InputAdornment,
@@ -22,14 +24,51 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridToolbar } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, updateProject } from '../store/slices/appSlice';
 import { parseEconomyCoreTypesFiles } from '../dayzConfig/economyCore';
 import { parseTypesXml, serializeTypesXml, TypeEntry } from '../dayzConfig/typesXml';
 import { dirnamePath, joinPath, basenamePath } from '../dayzConfig/pathUtils';
-import { DAYZ_CATEGORIES } from '../data/dayzEconomyReference';
+import { DAYZ_CATEGORIES, DAYZ_TAGS, DAYZ_USAGES, DAYZ_VALUES } from '../data/dayzEconomyReference';
+
+// Многозначная ячейка (usage/value/tags): список чипов в режиме просмотра, Autocomplete
+// с multiple+freeSolo в режиме редактирования (freeSolo — моды добавляют свои значения,
+// которых нет в справочнике DAYZ_*, их нельзя терять).
+const MultiSelectCell = ({ params }: { params: GridRenderCellParams<EconomyRow, string[]> }) => {
+    const list = params.value ?? [];
+    if (list.length === 0) return null;
+    return (
+        <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden', py: 0.5 }}>
+            {list.map((v) => (
+                <Chip key={v} label={v} size="small" />
+            ))}
+        </Stack>
+    );
+};
+
+const MultiSelectEditCell = ({ params, options }: { params: GridRenderEditCellParams<EconomyRow, string[]>; options: string[] }) => {
+    const { id, field, value, api } = params;
+    return (
+        <Autocomplete
+            multiple
+            freeSolo
+            fullWidth
+            size="small"
+            options={options}
+            value={value ?? []}
+            onChange={async (_, newValue) => {
+                await api.setEditCellValue({ id, field, value: newValue });
+            }}
+            renderTags={(tagValue, getTagProps) =>
+                tagValue.map((option, index) => <Chip label={option} size="small" {...getTagProps({ index })} key={option} />)
+            }
+            renderInput={(inputParams) => <TextField {...inputParams} autoFocus variant="standard" sx={{ px: 1 }} />}
+            sx={{ width: '100%' }}
+        />
+    );
+};
 
 interface EconomyRow {
     id: string;
@@ -51,9 +90,9 @@ interface EconomyRow {
     count_in_player: boolean;
     crafted: boolean;
     deloot: boolean;
-    usageText: string;
-    valueText: string;
-    tagsText: string;
+    usage: string[];
+    value: string[];
+    tags: string[];
 }
 
 const humanizeFileLabel = (fileKey: string) => {
@@ -63,12 +102,6 @@ const humanizeFileLabel = (fileKey: string) => {
     if (words.length === 0) return filename;
     return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 };
-
-const splitList = (text: string) =>
-    text
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
 
 const entriesToRows = (
     entries: TypeEntry[],
@@ -96,9 +129,9 @@ const entriesToRows = (
         count_in_player: e.flags.count_in_player,
         crafted: e.flags.crafted,
         deloot: e.flags.deloot,
-        usageText: e.usage.join(', '),
-        valueText: e.value.join(', '),
-        tagsText: e.tags.join(', '),
+        usage: e.usage,
+        value: e.value,
+        tags: e.tags,
     }));
 
 const rowsToEntries = (rows: EconomyRow[]): TypeEntry[] =>
@@ -120,9 +153,9 @@ const rowsToEntries = (rows: EconomyRow[]): TypeEntry[] =>
             crafted: r.crafted,
             deloot: r.deloot,
         },
-        usage: splitList(r.usageText),
-        value: splitList(r.valueText),
-        tags: splitList(r.tagsText),
+        usage: r.usage,
+        value: r.value,
+        tags: r.tags,
     }));
 
 type ViewStatus = 'detecting' | 'loading' | 'ready' | 'picker' | 'error';
@@ -323,9 +356,36 @@ export const TypesXmlView = () => {
             { field: 'min', headerName: t('economy.columns.min'), type: 'number', width: 90, editable: true },
             { field: 'quantmin', headerName: t('economy.columns.quantmin'), type: 'number', width: 100, editable: true },
             { field: 'quantmax', headerName: t('economy.columns.quantmax'), type: 'number', width: 100, editable: true },
-            { field: 'usageText', headerName: t('economy.columns.usage'), width: 220, editable: true },
-            { field: 'valueText', headerName: t('economy.columns.value'), width: 160, editable: true },
-            { field: 'tagsText', headerName: t('economy.columns.tags'), width: 160, editable: true },
+            {
+                field: 'usage',
+                headerName: t('economy.columns.usage'),
+                width: 240,
+                editable: true,
+                sortable: false,
+                filterable: false,
+                renderCell: (params) => <MultiSelectCell params={params} />,
+                renderEditCell: (params) => <MultiSelectEditCell params={params} options={DAYZ_USAGES} />,
+            },
+            {
+                field: 'value',
+                headerName: t('economy.columns.value'),
+                width: 180,
+                editable: true,
+                sortable: false,
+                filterable: false,
+                renderCell: (params) => <MultiSelectCell params={params} />,
+                renderEditCell: (params) => <MultiSelectEditCell params={params} options={DAYZ_VALUES} />,
+            },
+            {
+                field: 'tags',
+                headerName: t('economy.columns.tags'),
+                width: 180,
+                editable: true,
+                sortable: false,
+                filterable: false,
+                renderCell: (params) => <MultiSelectCell params={params} />,
+                renderEditCell: (params) => <MultiSelectEditCell params={params} options={DAYZ_TAGS} />,
+            },
             { field: 'lifetime', headerName: t('economy.columns.lifetime'), type: 'number', width: 120, editable: true },
             { field: 'restock', headerName: t('economy.columns.restock'), type: 'number', width: 110, editable: true },
             { field: 'cost', headerName: t('economy.columns.cost'), type: 'number', width: 90, editable: true },

@@ -16,18 +16,22 @@ if (require('electron-squirrel-startup')) {
 // загружается по http://, и Chromium блокирует в ней file://-подресурсы, поэтому картинки
 // карт отдаём через dayzasset://maps/<имя файла>.
 protocol.registerSchemesAsPrivileged([
-    { scheme: 'dayzasset', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true } },
+    {
+        scheme: 'dayzasset',
+        privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true },
+    },
 ]);
 
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({
+        autoHideMenuBar: true,
         width: 1920,
         height: 1080,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            sandbox: true,
+            sandbox: false,
         },
     });
 
@@ -37,7 +41,7 @@ const createWindow = () => {
         mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
     }
 
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 };
 
 // IPC Handlers
@@ -48,23 +52,23 @@ ipcMain.handle('open-folder-dialog', async () => {
     return result.filePaths[0] || null;
 });
 
-ipcMain.handle(
-    'open-file-dialog',
-    async (event, filters?: { name: string; extensions: string[] }[]) => {
-        const result = await dialog.showOpenDialog({
-            properties: ['openFile'],
-            filters: filters && filters.length > 0 ? filters : [{ name: 'XML Files', extensions: ['xml'] }],
-        });
-        return result.filePaths[0] || null;
-    }
-);
+ipcMain.handle('open-file-dialog', async (event, filters?: { name: string; extensions: string[] }[]) => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: filters && filters.length > 0 ? filters : [{ name: 'XML Files', extensions: ['xml'] }],
+    });
+    return result.filePaths[0] || null;
+});
 
 ipcMain.handle('find-files-by-extension', async (event, dirPath: string, extensions: string[]) => {
     try {
         const entries = await fs.readdir(dirPath, { withFileTypes: true });
         const normalizedExtensions = extensions.map((ext) => ext.toLowerCase());
         const matches = entries
-            .filter((entry) => entry.isFile() && normalizedExtensions.includes(path.extname(entry.name).toLowerCase().slice(1)))
+            .filter(
+                (entry) =>
+                    entry.isFile() && normalizedExtensions.includes(path.extname(entry.name).toLowerCase().slice(1)),
+            )
             .map((entry) => path.join(dirPath, entry.name));
         return { success: true, data: matches };
     } catch (error: any) {
@@ -306,4 +310,3 @@ app.on('activate', () => {
         createWindow();
     }
 });
-

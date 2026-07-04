@@ -14,19 +14,26 @@ export const DAYZ_CATEGORIES = [
 
 export const DAYZ_USAGES = [
     'Military',
+    'Alien',
     'Police',
     'Medic',
-    'Farm',
     'Firefighter',
-    'Hunting',
     'Industrial',
+    'Farm',
     'Coast',
     'Town',
     'Village',
+    'Hunting',
+    'Office',
     'School',
-    'SeasonalEvent',
     'Prison',
+    'Lunapark',
+    'SeasonalEvent',
     'ContaminatedArea',
+    'Historical',
+    'Underground',
 ];
 
-export const DAYZ_VALUES = ['Tier1', 'Tier2', 'Tier3', 'Tier4'];
+export const DAYZ_VALUES = ['Tier1', 'Tier2', 'Tier3', 'Tier4', 'Tier5'];
+
+export const DAYZ_TAGS = ['floor', 'ground', 'shelves', 'civilian'];
