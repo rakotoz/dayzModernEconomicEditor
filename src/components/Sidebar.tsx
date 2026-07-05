@@ -9,6 +9,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces';
 import TuneIcon from '@mui/icons-material/Tune';
 import PublicIcon from '@mui/icons-material/Public';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ import { EVENT_GROUPS_CONFIG_ID } from '../dayzConfig/eventGroupsXml';
 import { USER_DEFINITIONS_CONFIG_ID } from '../dayzConfig/userDefinitions';
 import { GLOBALS_CONFIG_ID } from '../dayzConfig/globalsXml';
 import { PLAYER_SPAWNS_CONFIG_ID } from '../dayzConfig/playerSpawnPoints';
+import { CFG_GAMEPLAY_CONFIG_ID } from '../dayzConfig/cfgGameplay';
 
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
@@ -44,6 +46,12 @@ export const Sidebar = () => {
                     name: t('sidebar.playerSpawnsFull'),
                     label: t('sidebar.playerSpawns'),
                     icon: <PersonPinCircleIcon fontSize="small" />,
+                },
+                {
+                    id: CFG_GAMEPLAY_CONFIG_ID,
+                    name: t('sidebar.cfgGameplayFull'),
+                    label: t('sidebar.cfgGameplay'),
+                    icon: <SportsEsportsIcon fontSize="small" />,
                 },
             ],
         },

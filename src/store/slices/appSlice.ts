@@ -11,6 +11,9 @@ export interface AppState {
     sidebarCollapsed: boolean;
     themeMode: ThemeMode;
     language: Language;
+    // Определяется на диске при открытии проекта (см. MainTemplate), не персистится —
+    // структура папок мода могла измениться с прошлого запуска.
+    expansionModAvailable: boolean;
 }
 
 const persisted = loadPersistedState();
@@ -24,6 +27,7 @@ const initialState: AppState = {
     sidebarCollapsed: persisted.sidebarCollapsed ?? false,
     themeMode: persisted.themeMode ?? 'dark',
     language: persisted.language ?? 'ru',
+    expansionModAvailable: false,
 };
 
 const appSlice = createSlice({
@@ -59,6 +63,10 @@ const appSlice = createSlice({
             state.currentProjectId = action.payload;
             state.currentConfig = null;
             state.mods = [];
+            state.expansionModAvailable = false;
+        },
+        setExpansionModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
+            state.expansionModAvailable = action.payload;
         },
         setCurrentConfig: (state: AppState, action: PayloadAction<ConfigFile | null>) => {
             state.currentConfig = action.payload;
@@ -86,6 +94,7 @@ export const {
     updateProject,
     removeProject,
     setCurrentProjectId,
+    setExpansionModAvailable,
     setCurrentConfig,
     setMods,
     toggleNavCollapsed,

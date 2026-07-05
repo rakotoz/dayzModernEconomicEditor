@@ -22,6 +22,7 @@ export interface Project {
     userDefinitionsPath?: string;
     globalsXmlPath?: string;
     playerSpawnsXmlPath?: string;
+    cfgGameplayPath?: string;
 }
 
 export interface ConfigFile {

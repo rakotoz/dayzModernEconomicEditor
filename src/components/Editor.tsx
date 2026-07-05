@@ -11,6 +11,7 @@ import { EVENT_GROUPS_CONFIG_ID } from '../dayzConfig/eventGroupsXml';
 import { USER_DEFINITIONS_CONFIG_ID } from '../dayzConfig/userDefinitions';
 import { GLOBALS_CONFIG_ID } from '../dayzConfig/globalsXml';
 import { PLAYER_SPAWNS_CONFIG_ID } from '../dayzConfig/playerSpawnPoints';
+import { CFG_GAMEPLAY_CONFIG_ID } from '../dayzConfig/cfgGameplay';
 import { ServerConfigView } from '../views/ServerConfigView';
 import { TypesXmlView } from '../views/TypesXmlView';
 import { EventsView } from '../views/EventsView';
@@ -19,6 +20,7 @@ import { EventGroupsView } from '../views/EventGroupsView';
 import { UserDefinitionsView } from '../views/UserDefinitionsView';
 import { GlobalsView } from '../views/GlobalsView';
 import { PlayerSpawnsView } from '../views/PlayerSpawnsView';
+import { CfgGameplayView } from '../views/CfgGameplayView';
 
 export const Editor = () => {
     const { t } = useTranslation();
@@ -62,6 +64,10 @@ export const Editor = () => {
 
     if (currentConfig.id === PLAYER_SPAWNS_CONFIG_ID) {
         return <PlayerSpawnsView />;
+    }
+
+    if (currentConfig.id === CFG_GAMEPLAY_CONFIG_ID) {
+        return <CfgGameplayView />;
     }
 
     return (

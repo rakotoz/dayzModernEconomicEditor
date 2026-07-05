@@ -107,6 +107,48 @@ ipcMain.handle('find-file-recursive', async (event, rootPath: string, fileName: 
     }
 });
 
+ipcMain.handle('path-exists', async (event, targetPath: string) => {
+    try {
+        await fs.access(targetPath);
+        return { success: true, data: true };
+    } catch {
+        return { success: true, data: false };
+    }
+});
+
+ipcMain.handle('find-dir-recursive', async (event, rootPath: string, dirName: string, maxDepth = 6) => {
+    const target = dirName.toLowerCase();
+    const results: string[] = [];
+    const skipDirs = new Set(['.git', 'node_modules', '.idea', '.vscode']);
+
+    const walk = async (dir: string, depth: number) => {
+        if (depth > maxDepth) return;
+        let entries: import('node:fs').Dirent[];
+        try {
+            entries = await fs.readdir(dir, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const entry of entries) {
+            if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+            const full = path.join(dir, entry.name);
+            if (entry.name.toLowerCase() === target) {
+                results.push(full);
+                continue;
+            }
+            if (skipDirs.has(entry.name)) continue;
+            await walk(full, depth + 1);
+        }
+    };
+
+    try {
+        await walk(rootPath, 0);
+        return { success: true, data: results };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+});
+
 ipcMain.handle('read-file', async (event, filePath: string) => {
     try {
         const content = await fs.readFile(filePath, 'utf-8');
