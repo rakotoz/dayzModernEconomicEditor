@@ -10,6 +10,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import PublicIcon from '@mui/icons-material/Public';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,7 @@ import { USER_DEFINITIONS_CONFIG_ID } from '../dayzConfig/userDefinitions';
 import { GLOBALS_CONFIG_ID } from '../dayzConfig/globalsXml';
 import { PLAYER_SPAWNS_CONFIG_ID } from '../dayzConfig/playerSpawnPoints';
 import { CFG_GAMEPLAY_CONFIG_ID } from '../dayzConfig/cfgGameplay';
+import { CFG_WEATHER_CONFIG_ID } from '../dayzConfig/cfgWeather';
 
 const EXPANDED_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
@@ -52,6 +54,12 @@ export const Sidebar = () => {
                     name: t('sidebar.cfgGameplayFull'),
                     label: t('sidebar.cfgGameplay'),
                     icon: <SportsEsportsIcon fontSize="small" />,
+                },
+                {
+                    id: CFG_WEATHER_CONFIG_ID,
+                    name: t('sidebar.cfgWeatherFull'),
+                    label: t('sidebar.cfgWeather'),
+                    icon: <CloudQueueIcon fontSize="small" />,
                 },
             ],
         },

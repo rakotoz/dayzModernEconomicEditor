@@ -23,6 +23,7 @@ export interface Project {
     globalsXmlPath?: string;
     playerSpawnsXmlPath?: string;
     cfgGameplayPath?: string;
+    cfgWeatherPath?: string;
 }
 
 export interface ConfigFile {
