@@ -35,7 +35,10 @@ export const setupAutoUpdater = () => {
     autoUpdater.on('error', (error) => broadcast({ state: 'error', message: error.message }));
 
     ipcMain.handle('updater:check-now', () => autoUpdater.checkForUpdates());
-    ipcMain.handle('updater:quit-and-install', () => autoUpdater.quitAndInstall());
+    // isSilent=true передаёт NSIS-установщику флаг /S — полностью бесшумная установка без
+    // мастера, независимо от oneClick в конфиге (мастер нужен только при первой установке).
+    // isForceRunAfter=true — приложение само откроется после тихого обновления.
+    ipcMain.handle('updater:quit-and-install', () => autoUpdater.quitAndInstall(true, true));
 
     // Первая проверка вскоре после старта, затем раз в 4 часа — сервер редактируется не
     // ежеминутно, частые проверки не нужны.
