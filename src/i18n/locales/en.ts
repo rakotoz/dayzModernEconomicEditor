@@ -471,4 +471,9 @@ export const en: TranslationSchema = {
         title: 'CFG Gameplay',
         saveError: 'Failed to save the file',
     },
+    updater: {
+        downloading: 'Downloading update… {{percent}}%',
+        readyToInstall: 'Version {{version}} is downloaded and ready to install.',
+        restartNow: 'Restart and update',
+    },
 };

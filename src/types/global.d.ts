@@ -1,3 +1,5 @@
+import type { UpdaterStatus } from '../autoUpdater';
+
 export interface ApiResult<T = unknown> {
     success: boolean;
     data?: T;
@@ -24,6 +26,8 @@ export interface DayzEditorApi {
     downloadMapImage: (mapKey: string, url: string) => Promise<ApiResult<string>>;
     downloadMapAddon: (mapKey: string, url: string) => Promise<ApiResult<string>>;
     getStorageDir: () => Promise<ApiResult<string>>;
+    onUpdaterStatus: (callback: (status: UpdaterStatus) => void) => () => void;
+    quitAndInstallUpdate: () => Promise<void>;
 }
 
 declare global {

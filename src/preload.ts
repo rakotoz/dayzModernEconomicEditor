@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 contextBridge.exposeInMainWorld('api', {
     openFolderDialog: () => ipcRenderer.invoke('open-folder-dialog'),
@@ -19,4 +19,10 @@ contextBridge.exposeInMainWorld('api', {
     downloadMapImage: (mapKey: string, url: string) => ipcRenderer.invoke('download-map-image', mapKey, url),
     downloadMapAddon: (mapKey: string, url: string) => ipcRenderer.invoke('download-map-addon', mapKey, url),
     getStorageDir: () => ipcRenderer.invoke('get-storage-dir'),
+    onUpdaterStatus: (callback: (status: unknown) => void) => {
+        const listener = (_event: IpcRendererEvent, status: unknown) => callback(status);
+        ipcRenderer.on('updater:status', listener);
+        return () => ipcRenderer.removeListener('updater:status', listener);
+    },
+    quitAndInstallUpdate: () => ipcRenderer.invoke('updater:quit-and-install'),
 });

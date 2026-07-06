@@ -469,6 +469,11 @@ export const ru = {
         title: 'CFG Gameplay',
         saveError: 'Не удалось сохранить файл',
     },
+    updater: {
+        downloading: 'Скачивается обновление… {{percent}}%',
+        readyToInstall: 'Доступна версия {{version}} — обновление скачано и готово к установке.',
+        restartNow: 'Перезапустить и обновить',
+    },
 };
 
 export type TranslationSchema = typeof ru;

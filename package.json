@@ -3,32 +3,53 @@
     "productName": "dayz-modern-economic-editor",
     "version": "0.3.0",
     "description": "This is a modern economic editor for DayZ",
-    "main": ".vite/build/main.js",
+    "main": "out/main/main.mjs",
     "private": true,
     "scripts": {
-        "start": "electron-forge start",
-        "package": "electron-forge package",
-        "make": "electron-forge make",
-        "publish": "electron-forge publish",
+        "dev": "electron-vite dev",
+        "build": "electron-vite build",
+        "start": "electron-vite preview",
+        "dist": "electron-vite build && electron-builder",
+        "dist:dir": "electron-vite build && electron-builder --dir",
+        "release": "electron-vite build && dotenv -e .env -- electron-builder --publish always",
         "lint": "eslint --ext .ts,.tsx ."
     },
     "keywords": [],
     "author": "Alexey Efremov",
     "license": "MIT",
+    "build": {
+        "appId": "com.alexefremov.dayz-modern-economic-editor",
+        "productName": "DayZ Modern Economic Editor",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "out/**/*",
+            "!node_modules/**/*"
+        ],
+        "asar": true,
+        "win": {
+            "target": "nsis"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true
+        },
+        "publish": {
+            "provider": "github",
+            "owner": "rakotoz",
+            "repo": "dayzModernEconomicEditor"
+        }
+    },
     "devDependencies": {
-        "@electron-forge/cli": "^7.11.1",
-        "@electron-forge/maker-deb": "^7.11.1",
-        "@electron-forge/maker-rpm": "^7.11.1",
-        "@electron-forge/maker-squirrel": "^7.11.1",
-        "@electron-forge/maker-zip": "^7.11.1",
-        "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
-        "@electron-forge/plugin-fuses": "^7.11.1",
-        "@electron-forge/plugin-vite": "^7.11.1",
-        "@electron/fuses": "^1.8.0",
-        "@types/electron-squirrel-startup": "^1.0.2",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
+        "dotenv-cli": "^11.0.0",
         "electron": "42.0.0",
+        "electron-builder": "^26.15.3",
+        "electron-vite": "^5.0.0",
         "eslint": "9.26.0",
         "eslint-plugin-import": "^2.32.0",
         "typescript": "~4.5.4",
@@ -45,7 +66,7 @@
         "@reduxjs/toolkit": "^2.11.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
-        "electron-squirrel-startup": "^1.0.1",
+        "electron-updater": "^6.8.9",
         "i18next": "^26.0.10",
         "prettier": "^3.8.3",
         "react": "^19.2.6",

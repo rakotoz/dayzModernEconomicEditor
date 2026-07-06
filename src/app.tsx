@@ -8,6 +8,7 @@ import theme from './theme/theme';
 import { store } from './store/store';
 import { useAppSelector } from './store/hooks';
 import i18n from './i18n';
+import { UpdateNotification } from './components/UpdateNotification';
 
 const ColorSchemeSync = () => {
     const themeMode = useAppSelector((state) => state.app.themeMode);
@@ -33,6 +34,7 @@ root.render(
             <CssBaseline />
             <ColorSchemeSync />
             <LanguageSync />
+            <UpdateNotification />
             <RouterProvider router={router} />
         </ThemeProvider>
     </Provider>,

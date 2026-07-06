@@ -5,12 +5,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { parseStringPromise, Builder } from 'xml2js';
+import { setupAutoUpdater } from './autoUpdater';
 
 const execFileAsync = promisify(execFile);
-
-if (require('electron-squirrel-startup')) {
-    app.quit();
-}
 
 // Собственная схема для локальных ресурсов приложения: страница renderer в dev-режиме
 // загружается по http://, и Chromium блокирует в ней file://-подресурсы, поэтому картинки
@@ -30,15 +27,17 @@ const createWindow = () => {
         width: 1920,
         height: 1080,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, '../preload/preload.js'),
             sandbox: false,
         },
     });
 
-    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-        mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    // ELECTRON_RENDERER_URL — переменная, которую electron-vite сам выставляет в dev-режиме
+    // (см. electron.vite.config.ts); в проде её нет, грузим собранный index.html из out/renderer.
+    if (process.env.ELECTRON_RENDERER_URL) {
+        mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
     } else {
-        mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+        mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
 
     // mainWindow.webContents.openDevTools();
@@ -339,6 +338,7 @@ app.on('ready', () => {
     setupAssetProtocol();
     migrateLegacyMaps();
     createWindow();
+    setupAutoUpdater();
 });
 
 app.on('window-all-closed', () => {
