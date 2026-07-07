@@ -166,6 +166,17 @@ ipcMain.handle('write-file', async (event, filePath: string, content: string) =>
     }
 });
 
+ipcMain.handle('delete-file', async (event, filePath: string) => {
+    try {
+        await fs.unlink(filePath);
+        return { success: true };
+    } catch (error: any) {
+        // Файла уже нет (например, ещё не был сохранён на диск) — не ошибка для нас.
+        if (error.code === 'ENOENT') return { success: true };
+        return { success: false, error: error.message };
+    }
+});
+
 ipcMain.handle('parse-xml', async (event, xmlContent: string) => {
     try {
         const result = await parseStringPromise(xmlContent);

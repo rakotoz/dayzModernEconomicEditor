@@ -3,6 +3,7 @@ import { Box, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Tool
 import FolderIcon from '@mui/icons-material/Folder';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import ExtensionIcon from '@mui/icons-material/Extension';
+import DiamondIcon from '@mui/icons-material/Diamond';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -23,6 +24,7 @@ export const NavRail = () => {
     const { t } = useTranslation();
     const currentProjectId = useAppSelector((state) => state.app.currentProjectId);
     const expansionModAvailable = useAppSelector((state) => state.app.expansionModAvailable);
+    const brdkModAvailable = useAppSelector((state) => state.app.brdkModAvailable);
     const collapsed = useAppSelector((state) => state.app.navCollapsed);
     const themeMode = useAppSelector((state) => state.app.themeMode);
     const language = useAppSelector((state) => state.app.language);
@@ -32,6 +34,9 @@ export const NavRail = () => {
         { path: '/editor', label: t('nav.editor'), icon: <EditNoteIcon /> },
         ...(expansionModAvailable && currentProjectId
             ? [{ path: '/expansion', label: t('nav.expansion'), icon: <ExtensionIcon /> }]
+            : []),
+        ...(brdkModAvailable && currentProjectId
+            ? [{ path: '/brdk', label: t('nav.brdk'), icon: <DiamondIcon /> }]
             : []),
     ];
 

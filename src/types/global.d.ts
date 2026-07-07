@@ -17,6 +17,7 @@ export interface DayzEditorApi {
     readFile: (path: string) => Promise<ApiResult<string>>;
     pathExists: (path: string) => Promise<ApiResult<boolean>>;
     writeFile: (path: string, content: string) => Promise<ApiResult>;
+    deleteFile: (path: string) => Promise<ApiResult>;
     parseXml: (content: string) => Promise<ApiResult>;
     findFilesByExtension: (dirPath: string, extensions: string[]) => Promise<ApiResult<string[]>>;
     findFileRecursive: (rootPath: string, fileName: string, maxDepth?: number) => Promise<ApiResult<string[]>>;

@@ -3,6 +3,7 @@ import { createHashRouter, Navigate } from 'react-router';
 import { AppShell } from './components/AppShell';
 import { MainTemplate } from './components/MainTemplate';
 import { ExpansionPage } from './components/ExpansionPage';
+import { BrdkPage } from './components/BrdkPage';
 import { ProjectsView } from './views/ProjectsView';
 import { useAppSelector } from './store/hooks';
 
@@ -19,6 +20,14 @@ const ExpansionRoute = () => {
     return <ExpansionPage />;
 };
 
+const BrdkRoute = () => {
+    const currentProjectId = useAppSelector((state) => state.app.currentProjectId);
+    const brdkModAvailable = useAppSelector((state) => state.app.brdkModAvailable);
+    if (!currentProjectId) return <Navigate to="/projects" replace />;
+    if (!brdkModAvailable) return <Navigate to="/editor" replace />;
+    return <BrdkPage />;
+};
+
 const router = createHashRouter([
     {
         path: '/',
@@ -28,6 +37,7 @@ const router = createHashRouter([
             { path: 'projects', element: <ProjectsView /> },
             { path: 'editor', element: <EditorRoute /> },
             { path: 'expansion', element: <ExpansionRoute /> },
+            { path: 'brdk', element: <BrdkRoute /> },
         ],
     },
 ]);

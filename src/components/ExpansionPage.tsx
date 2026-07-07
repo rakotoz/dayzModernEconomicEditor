@@ -6,12 +6,14 @@ import { useAppSelector } from '../store/hooks';
 import { selectCurrentProject } from '../store/slices/appSlice';
 import { ExpansionQuestsView } from '../views/ExpansionQuestsView';
 import { ExpansionQuestNpcsView } from '../views/ExpansionQuestNpcsView';
+import { ExpansionMarketView } from '../views/ExpansionMarketView';
+import { ExpansionTradersView } from '../views/ExpansionTradersView';
 
-type ExpansionSection = 'quests' | 'npcs';
+type ExpansionSection = 'quests' | 'npcs' | 'market' | 'traders';
 
 // Отдельная страница верхнего уровня (пункт NavRail), а не часть Sidebar/Editor —
 // по требованию: Expansion должен быть в главном меню, а не спрятан среди конфигов проекта.
-// Внутри — своё подменю разделов (сейчас: квесты, квестовые NPC).
+// Внутри — своё подменю разделов (квесты, квестовые NPC, магазин, торговцы).
 export const ExpansionPage = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -43,10 +45,15 @@ export const ExpansionPage = () => {
             <Tabs value={section} onChange={(_, v) => setSection(v)} sx={{ px: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
                 <Tab value="quests" label={t('expansion.sections.quests')} />
                 <Tab value="npcs" label={t('expansion.sections.npcs')} />
+                <Tab value="market" label={t('expansion.sections.market')} />
+                <Tab value="traders" label={t('expansion.sections.traders')} />
             </Tabs>
 
             <Box sx={{ flex: 1, minHeight: 0 }}>
-                {section === 'quests' ? <ExpansionQuestsView /> : <ExpansionQuestNpcsView />}
+                {section === 'quests' && <ExpansionQuestsView />}
+                {section === 'npcs' && <ExpansionQuestNpcsView />}
+                {section === 'market' && <ExpansionMarketView />}
+                {section === 'traders' && <ExpansionTradersView />}
             </Box>
         </Box>
     );

@@ -568,6 +568,17 @@ export const ExpansionQuestsView = () => {
         setSelectedId(row.rowId);
     };
 
+    const handleRemoveQuest = async (row: QuestRow) => {
+        await window.api.deleteFile(row.filePath);
+        setRows((prev) => prev.filter((r) => r.rowId !== row.rowId));
+        setDirtyPaths((prev) => {
+            const next = new Set(prev);
+            next.delete(row.filePath);
+            return next;
+        });
+        if (selectedId === row.rowId) setSelectedId(null);
+    };
+
     const handleSave = async () => {
         setSaving(true);
         setSaveError(null);
@@ -674,6 +685,15 @@ export const ExpansionQuestsView = () => {
                         {filteredRows.map((r) => (
                             <ListItemButton key={r.rowId} selected={r.rowId === selectedId} onClick={() => setSelectedId(r.rowId)}>
                                 <ListItemText primary={`#${r.quest.ID} ${r.quest.Title || ''}`} secondary={dirtyPaths.has(r.filePath) ? t('common.unsaved') : basenamePath(r.filePath)} />
+                                <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveQuest(r);
+                                    }}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
                             </ListItemButton>
                         ))}
                         {filteredRows.length === 0 && (

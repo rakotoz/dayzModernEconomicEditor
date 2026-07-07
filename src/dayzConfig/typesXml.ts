@@ -1,4 +1,7 @@
 import i18n from '../i18n';
+import { Project } from '../types';
+import { parseEconomyCoreTypesFiles } from './economyCore';
+import { dirnamePath, joinPath } from './pathUtils';
 
 export interface TypeFlags {
     count_in_cargo: boolean;
@@ -121,4 +124,72 @@ export const serializeTypesXml = (entries: TypeEntry[]): string => {
 
     lines.push('</types>');
     return lines.join('\r\n') + '\r\n';
+};
+
+// Человекочитаемое имя файла экономики (db/types.xml -> "Types", custom_types/brdk_cards.xml
+// -> "Brdk Cards") — общее для TypesXmlView и пикера classname'ов в редакторе магазина.
+export const humanizeFileLabel = (fileKey: string) => {
+    const filename = fileKey.split('/').pop() ?? fileKey;
+    const withoutExt = filename.replace(/\.xml$/i, '');
+    const words = withoutExt.split(/[_\-\s]+/).filter(Boolean);
+    if (words.length === 0) return filename;
+    return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+};
+
+export interface EconomyClassNameGroup {
+    fileKey: string;
+    names: string[];
+}
+
+// Все classname'ы из экономики проекта, сгруппированные по файлу types.xml (все объявленные
+// в cfgeconomycore.xml + неявный db/types.xml) — источник для пикера ClassName в редакторе
+// магазина Expansion: показывает, из какого файла берётся предмет, а не просто плоский список.
+// Ошибки отдельных файлов не прерывают загрузку остальных.
+export const loadEconomyClassNamesByFile = async (project: Project): Promise<EconomyClassNameGroup[]> => {
+    const coreRes = await window.api.findFileRecursive(project.path, 'cfgeconomycore.xml');
+    if (!coreRes.success || !coreRes.data || coreRes.data.length === 0) return [];
+    const corePath = coreRes.data[0];
+    const coreContentRes = await window.api.readFile(corePath);
+    if (!coreContentRes.success || coreContentRes.data === undefined) return [];
+
+    let fileInfos;
+    try {
+        fileInfos = parseEconomyCoreTypesFiles(coreContentRes.data);
+    } catch {
+        return [];
+    }
+
+    const hasExplicitDb = fileInfos.some((info) => info.folder.toLowerCase() === 'db' && info.fileName.toLowerCase() === 'types.xml');
+    const allFileInfos = hasExplicitDb ? fileInfos : [{ folder: 'db', fileName: 'types.xml' }, ...fileInfos];
+
+    const missionRoot = dirnamePath(corePath);
+
+    const groups = await Promise.all(
+        allFileInfos.map(async (info): Promise<EconomyClassNameGroup | null> => {
+            const filePath = joinPath(missionRoot, info.folder, info.fileName);
+            const res = await window.api.readFile(filePath);
+            if (!res.success || res.data === undefined) return null;
+            try {
+                const names = parseTypesXml(res.data)
+                    .map((entry) => entry.name)
+                    .sort();
+                if (names.length === 0) return null;
+                return { fileKey: `${info.folder}/${info.fileName}`, names };
+            } catch {
+                return null;
+                // повреждённый/отсутствующий файл пропускаем, остальные подсказки всё равно полезны
+            }
+        })
+    );
+
+    return groups
+        .filter((g): g is EconomyClassNameGroup => g !== null)
+        .sort((a, b) => humanizeFileLabel(a.fileKey).localeCompare(humanizeFileLabel(b.fileKey)));
+};
+
+export const loadAllEconomyClassNames = async (project: Project): Promise<string[]> => {
+    const groups = await loadEconomyClassNamesByFile(project);
+    const names = new Set<string>();
+    for (const g of groups) for (const n of g.names) names.add(n);
+    return [...names].sort();
 };

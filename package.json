@@ -1,7 +1,7 @@
 {
     "name": "dayz-modern-economic-editor",
     "productName": "dayz-modern-economic-editor",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "description": "This is a modern economic editor for DayZ",
     "main": "out/main/main.mjs",
     "private": true,

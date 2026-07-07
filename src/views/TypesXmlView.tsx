@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, updateProject } from '../store/slices/appSlice';
 import { parseEconomyCoreTypesFiles } from '../dayzConfig/economyCore';
-import { parseTypesXml, serializeTypesXml, TypeEntry } from '../dayzConfig/typesXml';
+import { humanizeFileLabel, parseTypesXml, serializeTypesXml, TypeEntry } from '../dayzConfig/typesXml';
 import { dirnamePath, joinPath, basenamePath } from '../dayzConfig/pathUtils';
 import { DAYZ_CATEGORIES, DAYZ_TAGS, DAYZ_USAGES, DAYZ_VALUES } from '../data/dayzEconomyReference';
 
@@ -95,13 +95,6 @@ interface EconomyRow {
     tags: string[];
 }
 
-const humanizeFileLabel = (fileKey: string) => {
-    const filename = fileKey.split('/').pop() ?? fileKey;
-    const withoutExt = filename.replace(/\.xml$/i, '');
-    const words = withoutExt.split(/[_\-\s]+/).filter(Boolean);
-    if (words.length === 0) return filename;
-    return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-};
 
 const entriesToRows = (
     entries: TypeEntry[],

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Checkbox, Chip, FormControlLabel, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { JsonValue } from '../dayzConfig/cfgGameplay';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { JsonValue, setJsonPath } from '../dayzConfig/cfgGameplay';
 
 interface RecursiveJsonFormProps {
     data: Record<string, JsonValue>;
@@ -60,6 +61,58 @@ const NumberArrayList = ({ values, onChange }: { values: number[]; onChange: (v:
     </Stack>
 );
 
+// Массив объектов (VeineDataDataList, ZmbPresetList, StashPresetCfgList и т.п.) — частый
+// случай в кастомных JSON-конфигах модов (BRDK, cfggameplay). Каждый элемент рендерится как
+// отдельная карточка через ObjectSection (рекурсивно, вложенные массивы объектов внутри
+// элемента тоже поддерживаются), можно добавлять (клонируя форму последнего элемента, чтобы
+// не заставлять пользователя вручную создавать все поля с нуля) и удалять элементы.
+const ArrayOfObjectsList = ({
+    label,
+    values,
+    onChange,
+}: {
+    label: string;
+    values: Record<string, JsonValue>[];
+    onChange: (v: JsonValue) => void;
+}) => {
+    const addItem = () => {
+        const template = values.length > 0 ? values[values.length - 1] : {};
+        onChange([...values, JSON.parse(JSON.stringify(template))] as JsonValue);
+    };
+    const removeItem = (i: number) => onChange(values.filter((_, j) => j !== i) as JsonValue);
+    const updateItem = (i: number, itemPath: string[], v: JsonValue) => {
+        const next = [...values];
+        next[i] = setJsonPath(next[i], itemPath, v);
+        onChange(next as JsonValue);
+    };
+
+    return (
+        <Box>
+            <Typography variant="caption" color="text.secondary">
+                {label}
+            </Typography>
+            <Stack spacing={1} sx={{ mt: 0.5 }}>
+                {values.map((item, i) => (
+                    <Paper key={i} variant="outlined" sx={{ p: 1.5 }}>
+                        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                                #{i + 1}
+                            </Typography>
+                            <IconButton size="small" onClick={() => removeItem(i)}>
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        </Stack>
+                        <ObjectSection path={[]} value={item} onChange={(p, v) => updateItem(i, p, v)} />
+                    </Paper>
+                ))}
+                <Button size="small" startIcon={<AddIcon />} onClick={addItem}>
+                    +
+                </Button>
+            </Stack>
+        </Box>
+    );
+};
+
 // Одно поле любого типа (примитив/массив) с подписью — рекурсия в объект делегируется наверх.
 const FieldRow = ({ label, value, onChange }: { label: string; value: JsonValue; onChange: (v: JsonValue) => void }) => {
     if (typeof value === 'boolean') {
@@ -72,6 +125,10 @@ const FieldRow = ({ label, value, onChange }: { label: string; value: JsonValue;
         return <TextField label={label} size="small" fullWidth value={value} onChange={(e) => onChange(e.target.value)} />;
     }
     if (Array.isArray(value)) {
+        const isObjectArray = value.length > 0 && value.every((v) => v !== null && typeof v === 'object' && !Array.isArray(v));
+        if (isObjectArray) {
+            return <ArrayOfObjectsList label={label} values={value as Record<string, JsonValue>[]} onChange={onChange} />;
+        }
         const isNumeric = value.length > 0 && value.every((v) => typeof v === 'number');
         const isString = value.length > 0 && value.every((v) => typeof v === 'string');
         return (

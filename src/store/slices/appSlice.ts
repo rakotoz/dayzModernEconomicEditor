@@ -14,6 +14,12 @@ export interface AppState {
     // Определяется на диске при открытии проекта (см. MainTemplate), не персистится —
     // структура папок мода могла измениться с прошлого запуска.
     expansionModAvailable: boolean;
+    // Аналогично expansionModAvailable, но для набора модов BRDK (папка profiles/BRDK_MODS).
+    brdkModAvailable: boolean;
+    // Инкрементируется при каждом setCurrentProjectId, даже если id совпадает с уже открытым
+    // проектом (повторное «Открыть» после «К проектам») — AppShell использует это как доп.
+    // зависимость эффекта детекции, т.к. project?.id/path и т.д. в этом случае не меняются.
+    projectOpenNonce: number;
 }
 
 const persisted = loadPersistedState();
@@ -28,6 +34,8 @@ const initialState: AppState = {
     themeMode: persisted.themeMode ?? 'dark',
     language: persisted.language ?? 'ru',
     expansionModAvailable: false,
+    brdkModAvailable: false,
+    projectOpenNonce: 0,
 };
 
 const appSlice = createSlice({
@@ -64,9 +72,14 @@ const appSlice = createSlice({
             state.currentConfig = null;
             state.mods = [];
             state.expansionModAvailable = false;
+            state.brdkModAvailable = false;
+            state.projectOpenNonce += 1;
         },
         setExpansionModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
             state.expansionModAvailable = action.payload;
+        },
+        setBrdkModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
+            state.brdkModAvailable = action.payload;
         },
         setCurrentConfig: (state: AppState, action: PayloadAction<ConfigFile | null>) => {
             state.currentConfig = action.payload;
@@ -95,6 +108,7 @@ export const {
     removeProject,
     setCurrentProjectId,
     setExpansionModAvailable,
+    setBrdkModAvailable,
     setCurrentConfig,
     setMods,
     toggleNavCollapsed,

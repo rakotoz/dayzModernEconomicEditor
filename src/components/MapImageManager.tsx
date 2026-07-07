@@ -26,21 +26,27 @@ export const MapImageManager = ({ mapKey, onResolved }: MapImageManagerProps) =>
 
     const assetUrl = getMapAssetUrlByKey(mapKey);
 
-    const refresh = async () => {
+    // При открытии формы редактирования mapKey на первый рендер ещё указывает на дефолт
+    // (значения проекта подставляются чуть позже эффектом в форме) — без защиты от гонки
+    // устаревший ответ по дефолтному ключу мог прилететь позже верного и перезаписать его,
+    // из-за чего для уже сохранённой карты показывалось «не найдено».
+    useEffect(() => {
+        let cancelled = false;
         setChecking(true);
         setError(null);
-        const res = await window.api.getMapImagePath(mapKey);
-        setChecking(false);
-        if (!res.success) {
-            setError(res.error ?? null);
-            return;
-        }
-        setImagePath(res.data ?? null);
-        onResolved?.(res.data ?? null);
-    };
-
-    useEffect(() => {
-        refresh();
+        window.api.getMapImagePath(mapKey).then((res) => {
+            if (cancelled) return;
+            setChecking(false);
+            if (!res.success) {
+                setError(res.error ?? null);
+                return;
+            }
+            setImagePath(res.data ?? null);
+            onResolved?.(res.data ?? null);
+        });
+        return () => {
+            cancelled = true;
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mapKey]);
 

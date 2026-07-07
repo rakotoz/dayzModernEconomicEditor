@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('api', {
     readFile: (path: string) => ipcRenderer.invoke('read-file', path),
     pathExists: (path: string) => ipcRenderer.invoke('path-exists', path),
     writeFile: (path: string, content: string) => ipcRenderer.invoke('write-file', path, content),
+    deleteFile: (path: string) => ipcRenderer.invoke('delete-file', path),
     parseXml: (content: string) => ipcRenderer.invoke('parse-xml', content),
     findFilesByExtension: (dirPath: string, extensions: string[]) =>
         ipcRenderer.invoke('find-files-by-extension', dirPath, extensions),
