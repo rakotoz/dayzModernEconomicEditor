@@ -513,6 +513,7 @@ export const ru = {
         selectHint: 'Выберите категорию слева',
         addCategory: 'Добавить категорию',
         addItem: 'Добавить товар',
+        addFromList: 'Добавить из списка',
         items: 'Товары',
     },
     expansionTraders: {
@@ -537,10 +538,12 @@ export const ru = {
     },
     classNamePicker: {
         title: 'Выбрать предмет',
+        titleMultiple: 'Выбрать предметы',
         searchPlaceholder: 'Поиск по названию…',
         browse: 'Выбрать из списка',
         noData: 'Список предметов недоступен — не найден cfgeconomycore.xml или types.xml',
         nothingFound: 'Ничего не найдено',
+        addSelected: 'Добавить ({{count}})',
     },
     brdkConfig: {
         detecting: 'Ищем папку конфигов BRDK…',

@@ -18,7 +18,7 @@ import {
     serializeTraderDefinition,
     TraderDefinition,
 } from '../dayzConfig/expansionMarket';
-import { EconomyClassNameGroup, loadEconomyClassNamesByFile } from '../dayzConfig/typesXml';
+import { EconomyClassNameGroup, loadEconomyClassNamesByFileCached } from '../dayzConfig/typesXml';
 import { basenamePath } from '../dayzConfig/pathUtils';
 import { ClassNamePickerDialog } from '../components/ClassNamePickerDialog';
 
@@ -164,7 +164,7 @@ export const ExpansionTradersView = () => {
         setTradersDir(dir);
         setStatus('loading');
 
-        loadEconomyClassNamesByFile(project).then(setClassNameGroups);
+        loadEconomyClassNamesByFileCached(project).then(setClassNameGroups);
 
         const marketDir = await findExpansionMarketDir(project);
         if (marketDir) {

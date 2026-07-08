@@ -193,3 +193,18 @@ export const loadAllEconomyClassNames = async (project: Project): Promise<string
     for (const g of groups) for (const n of g.names) names.add(n);
     return [...names].sort();
 };
+
+// Кэш по пути проекта: и Market, и Traders открывают ClassName-пикер, и раньше каждый экран
+// заново читал/парсил все types.xml при собственном монтировании — при переключении вкладок
+// туда-обратно список подгружался с нуля каждый раз, а пикер при первом открытии окна ждал
+// это чтение. AppShell прогревает кэш сразу при обнаружении мода Expansion (см. AppShell.tsx),
+// поэтому к моменту, когда пользователь реально откроет магазин/торговцев и нажмёт на пикер,
+// список обычно уже готов — не нужно ждать "в момент открытия окна".
+let cache: { projectPath: string; promise: Promise<EconomyClassNameGroup[]> } | null = null;
+
+export const loadEconomyClassNamesByFileCached = (project: Project): Promise<EconomyClassNameGroup[]> => {
+    if (cache && cache.projectPath === project.path) return cache.promise;
+    const promise = loadEconomyClassNamesByFile(project);
+    cache = { projectPath: project.path, promise };
+    return promise;
+};

@@ -19,7 +19,7 @@ import {
     parseMarketCategory,
     serializeMarketCategory,
 } from '../dayzConfig/expansionMarket';
-import { EconomyClassNameGroup, loadEconomyClassNamesByFile } from '../dayzConfig/typesXml';
+import { EconomyClassNameGroup, loadEconomyClassNamesByFileCached } from '../dayzConfig/typesXml';
 import { basenamePath } from '../dayzConfig/pathUtils';
 import { ClassNamePickerDialog } from '../components/ClassNamePickerDialog';
 
@@ -97,6 +97,7 @@ export const ExpansionMarketView = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [classNameGroups, setClassNameGroups] = useState<EconomyClassNameGroup[]>([]);
+    const [bulkPickerOpen, setBulkPickerOpen] = useState(false);
 
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -115,7 +116,7 @@ export const ExpansionMarketView = () => {
         setMarketDir(dir);
         setStatus('loading');
 
-        loadEconomyClassNamesByFile(project).then(setClassNameGroups);
+        loadEconomyClassNamesByFileCached(project).then(setClassNameGroups);
 
         const filesRes = await window.api.findFilesByExtension(dir, ['json']);
         if (!filesRes.success || !filesRes.data) {
@@ -407,13 +408,18 @@ export const ExpansionMarketView = () => {
                                     <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
                                         {t('expansionMarket.items')} ({selected.items.length})
                                     </Typography>
-                                    <Button
-                                        size="small"
-                                        startIcon={<AddIcon />}
-                                        onClick={() => patchSelected({ items: [...selected.items, { ...emptyMarketItem(), itemId: nanoid() }] })}
-                                    >
-                                        {t('expansionMarket.addItem')}
-                                    </Button>
+                                    <Stack direction="row" spacing={1}>
+                                        <Button size="small" startIcon={<ListAltIcon />} onClick={() => setBulkPickerOpen(true)}>
+                                            {t('expansionMarket.addFromList')}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            startIcon={<AddIcon />}
+                                            onClick={() => patchSelected({ items: [...selected.items, { ...emptyMarketItem(), itemId: nanoid() }] })}
+                                        >
+                                            {t('expansionMarket.addItem')}
+                                        </Button>
+                                    </Stack>
                                 </Stack>
                                 <Box sx={{ flex: 1, minHeight: 0 }}>
                                     <DataGrid
@@ -435,6 +441,17 @@ export const ExpansionMarketView = () => {
                     )}
                 </Box>
             </Box>
+
+            <ClassNamePickerDialog
+                open={bulkPickerOpen}
+                groups={classNameGroups}
+                multiple
+                onClose={() => setBulkPickerOpen(false)}
+                onSelectMultiple={(names) => {
+                    if (!selected) return;
+                    patchSelected({ items: [...selected.items, ...names.map((name) => ({ ...emptyMarketItem(), ClassName: name, itemId: nanoid() }))] });
+                }}
+            />
 
             <Snackbar open={savedNotice} autoHideDuration={2500} onClose={() => setSavedNotice(false)} message={t('common.saved')} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />
         </Box>

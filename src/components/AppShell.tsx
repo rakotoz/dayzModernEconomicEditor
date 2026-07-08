@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentProject, setExpansionModAvailable, setBrdkModAvailable } from '../store/slices/appSlice';
 import { detectExpansionMod } from '../dayzConfig/expansionMod';
 import { detectBrdkMod } from '../dayzConfig/brdkMod';
+import { loadEconomyClassNamesByFileCached } from '../dayzConfig/typesXml';
 
 export const AppShell = () => {
     const dispatch = useAppDispatch();
@@ -24,6 +25,9 @@ export const AppShell = () => {
         let cancelled = false;
         detectExpansionMod(currentProject).then((found) => {
             if (!cancelled) dispatch(setExpansionModAvailable(found));
+            // Прогреваем кэш classname'ов economy сразу, как только известно, что мод стоит —
+            // ClassName-пикер в Market/Traders откроется уже без ожидания парсинга types.xml.
+            if (!cancelled && found) loadEconomyClassNamesByFileCached(currentProject);
         });
         detectBrdkMod(currentProject).then((found) => {
             if (!cancelled) dispatch(setBrdkModAvailable(found));

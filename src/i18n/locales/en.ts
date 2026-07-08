@@ -515,6 +515,7 @@ export const en: TranslationSchema = {
         selectHint: 'Select a category on the left',
         addCategory: 'Add category',
         addItem: 'Add item',
+        addFromList: 'Add from list',
         items: 'Items',
     },
     expansionTraders: {
@@ -539,10 +540,12 @@ export const en: TranslationSchema = {
     },
     classNamePicker: {
         title: 'Select item',
+        titleMultiple: 'Select items',
         searchPlaceholder: 'Search by name…',
         browse: 'Browse list',
         noData: 'Item list unavailable — cfgeconomycore.xml or types.xml not found',
         nothingFound: 'Nothing found',
+        addSelected: 'Add ({{count}})',
     },
     brdkConfig: {
         detecting: 'Looking for the BRDK config folder…',
