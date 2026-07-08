@@ -532,8 +532,14 @@ export const ru = {
             basic: 'Основное',
             reputation: 'Репутация',
             currency: 'Валюта',
-            categories: 'Категории товаров (из Market)',
+            categories: 'Категории товаров (из Market) — направление торговли для каждой',
             directItems: 'Прямые товары (в обход категорий)',
+        },
+        categoryBehavior: {
+            buyOnly: 'Только покупка у трейдера',
+            buySell: 'Покупка и продажа',
+            sellOnly: 'Только продажа трейдеру',
+            hidden: 'Скрыта (только для кастомизации)',
         },
     },
     classNamePicker: {

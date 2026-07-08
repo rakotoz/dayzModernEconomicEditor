@@ -25,9 +25,34 @@ export interface MarketCategory {
     [key: string]: unknown;
 }
 
-// Categories — имена файлов из Market/ (без .json), опционально с суффиксом ":N" —
-// множитель стока для этого трейдера. Items — прямые товары трейдера в обход категорий,
-// classname -> числовой параметр (аналог множителя).
+// Categories — имена файлов из Market/ (без .json), опционально с суффиксом ":N", где N —
+// НЕ множитель (как ошибочно считалось раньше), а флаг разрешённого направления торговли
+// для этой категории у конкретного трейдера:
+//   0 — только покупка у трейдера (игрок не может продать сюда)
+//   1 — покупка и продажа (по умолчанию, если суффикс не указан)
+//   2 — только продажа трейдеру (игрок не может купить)
+//   3 — скрыта из меню трейдера (доступна только для кастомизации/аттачментов)
+// см. https://github.com/salutesh/DayZ-Expansion-Scripts/wiki/%5BServer-Hosting%5D-Trader-Settings
+// Items — прямые товары трейдера в обход категорий, classname -> числовой параметр.
+export type TraderCategoryBehavior = 0 | 1 | 2 | 3;
+
+export interface TraderCategoryEntry {
+    name: string;
+    behavior: TraderCategoryBehavior;
+}
+
+export const parseTraderCategories = (raw: string[]): TraderCategoryEntry[] =>
+    raw.map((s) => {
+        const idx = s.lastIndexOf(':');
+        if (idx === -1) return { name: s, behavior: 1 };
+        const behavior = Number(s.slice(idx + 1));
+        if (Number.isNaN(behavior) || behavior < 0 || behavior > 3) return { name: s, behavior: 1 };
+        return { name: s.slice(0, idx), behavior: behavior as TraderCategoryBehavior };
+    });
+
+export const serializeTraderCategories = (entries: TraderCategoryEntry[]): string[] =>
+    entries.map((e) => `${e.name}:${e.behavior}`);
+
 export interface TraderDefinition {
     m_Version: number;
     DisplayName: string;

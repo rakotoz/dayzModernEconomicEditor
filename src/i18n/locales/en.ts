@@ -534,8 +534,14 @@ export const en: TranslationSchema = {
             basic: 'Basic',
             reputation: 'Reputation',
             currency: 'Currency',
-            categories: 'Item categories (from Market)',
+            categories: 'Item categories (from Market) — trade direction per category',
             directItems: 'Direct items (bypassing categories)',
+        },
+        categoryBehavior: {
+            buyOnly: 'Buy from trader only',
+            buySell: 'Buy and sell',
+            sellOnly: 'Sell to trader only',
+            hidden: 'Hidden (customization only)',
         },
     },
     classNamePicker: {

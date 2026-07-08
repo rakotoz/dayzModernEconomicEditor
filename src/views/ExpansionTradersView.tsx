@@ -14,8 +14,11 @@ import {
     emptyTraderDefinition,
     findExpansionMarketDir,
     findExpansionTradersDir,
+    parseTraderCategories,
     parseTraderDefinition,
+    serializeTraderCategories,
     serializeTraderDefinition,
+    TraderCategoryBehavior,
     TraderDefinition,
 } from '../dayzConfig/expansionMarket';
 import { EconomyClassNameGroup, loadEconomyClassNamesByFileCached } from '../dayzConfig/typesXml';
@@ -31,7 +34,7 @@ interface TraderRow {
 
 type ViewStatus = 'detecting' | 'loading' | 'ready' | 'error';
 
-const StringChipList = ({ values, onChange, options }: { values: string[]; onChange: (v: string[]) => void; options?: string[] }) => {
+const StringChipList = ({ values, onChange }: { values: string[]; onChange: (v: string[]) => void }) => {
     const [draft, setDraft] = useState('');
     const add = () => {
         if (!draft.trim()) return;
@@ -45,29 +48,103 @@ const StringChipList = ({ values, onChange, options }: { values: string[]; onCha
                     <Chip key={`${v}-${i}`} label={v} size="small" onDelete={() => onChange(values.filter((_, j) => j !== i))} />
                 ))}
             </Stack>
-            {options ? (
+            <Stack direction="row" spacing={1}>
+                <TextField size="small" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} sx={{ flex: 1, maxWidth: 260 }} />
+                <Button size="small" startIcon={<AddIcon />} onClick={add}>
+                    +
+                </Button>
+            </Stack>
+        </Box>
+    );
+};
+
+const CATEGORY_BEHAVIORS: { value: TraderCategoryBehavior; labelKey: string }[] = [
+    { value: 0, labelKey: 'buyOnly' },
+    { value: 1, labelKey: 'buySell' },
+    { value: 2, labelKey: 'sellOnly' },
+    { value: 3, labelKey: 'hidden' },
+];
+
+// Categories трейдера — не просто список имён, у каждой категории есть флаг направления
+// торговли (только покупка/продажа/оба/скрыта), закодированный суффиксом ":N" в самой строке
+// (см. parseTraderCategories). Раньше это редактировалось как обычный StringChipList и флаг
+// было невозможно выставить иначе как руками в JSON — теперь у каждой строки свой выбор.
+const TraderCategoryList = ({ value, onChange, options }: { value: string[]; onChange: (v: string[]) => void; options: string[] }) => {
+    const { t } = useTranslation();
+    const entries = useMemo(() => parseTraderCategories(value), [value]);
+    const [draftName, setDraftName] = useState('');
+    const [draftBehavior, setDraftBehavior] = useState<TraderCategoryBehavior>(1);
+
+    const updateEntries = (next: typeof entries) => onChange(serializeTraderCategories(next));
+
+    const add = () => {
+        if (!draftName.trim()) return;
+        updateEntries([...entries, { name: draftName.trim(), behavior: draftBehavior }]);
+        setDraftName('');
+        setDraftBehavior(1);
+    };
+    const remove = (i: number) => updateEntries(entries.filter((_, j) => j !== i));
+    const patchBehavior = (i: number, behavior: TraderCategoryBehavior) => updateEntries(entries.map((e, j) => (j === i ? { ...e, behavior } : e)));
+
+    return (
+        <Box>
+            <Stack spacing={0.5} sx={{ mb: 1 }}>
+                {entries.map((e, i) => (
+                    <Stack key={`${e.name}-${i}`} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                        <Chip label={e.name} size="small" sx={{ minWidth: 140 }} />
+                        <TextField
+                            select
+                            size="small"
+                            value={e.behavior}
+                            onChange={(ev) => patchBehavior(i, Number(ev.target.value) as TraderCategoryBehavior)}
+                            sx={{ width: 190 }}
+                            slotProps={{ select: { native: true } }}
+                        >
+                            {CATEGORY_BEHAVIORS.map((b) => (
+                                <option key={b.value} value={b.value}>
+                                    {t(`expansionTraders.categoryBehavior.${b.labelKey}`)}
+                                </option>
+                            ))}
+                        </TextField>
+                        <IconButton size="small" onClick={() => remove(i)}>
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </Stack>
+                ))}
+                {entries.length === 0 && (
+                    <Typography variant="caption" color="text.secondary">
+                        —
+                    </Typography>
+                )}
+            </Stack>
+            <Stack direction="row" spacing={1}>
                 <Autocomplete
                     freeSolo
-                    options={options.filter((o) => !values.includes(o))}
-                    inputValue={draft}
-                    onInputChange={(_, v) => setDraft(v)}
-                    onChange={(_, v) => {
-                        if (v) {
-                            onChange([...values, v]);
-                            setDraft('');
-                        }
-                    }}
-                    renderInput={(params) => <TextField {...params} size="small" placeholder="Category" sx={{ maxWidth: 260 }} />}
-                    sx={{ display: 'inline-block', width: 260 }}
+                    options={options.filter((o) => !entries.some((e) => e.name === o))}
+                    inputValue={draftName}
+                    onInputChange={(_, v) => setDraftName(v)}
+                    onChange={(_, v) => v && setDraftName(v)}
+                    renderInput={(params) => <TextField {...params} size="small" placeholder="Category" sx={{ maxWidth: 220 }} />}
+                    sx={{ display: 'inline-block', width: 220 }}
                 />
-            ) : (
-                <Stack direction="row" spacing={1}>
-                    <TextField size="small" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} sx={{ flex: 1, maxWidth: 260 }} />
-                    <Button size="small" startIcon={<AddIcon />} onClick={add}>
-                        +
-                    </Button>
-                </Stack>
-            )}
+                <TextField
+                    select
+                    size="small"
+                    value={draftBehavior}
+                    onChange={(e) => setDraftBehavior(Number(e.target.value) as TraderCategoryBehavior)}
+                    sx={{ width: 190 }}
+                    slotProps={{ select: { native: true } }}
+                >
+                    {CATEGORY_BEHAVIORS.map((b) => (
+                        <option key={b.value} value={b.value}>
+                            {t(`expansionTraders.categoryBehavior.${b.labelKey}`)}
+                        </option>
+                    ))}
+                </TextField>
+                <Button size="small" startIcon={<AddIcon />} onClick={add}>
+                    +
+                </Button>
+            </Stack>
         </Box>
     );
 };
@@ -400,7 +477,7 @@ export const ExpansionTradersView = () => {
                                 <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                     {t('expansionTraders.sections.categories')}
                                 </Typography>
-                                <StringChipList values={trader.Categories} onChange={(v) => patchSelected({ Categories: v })} options={marketCategoryNames} />
+                                <TraderCategoryList value={trader.Categories} onChange={(v) => patchSelected({ Categories: v })} options={marketCategoryNames} />
                             </Paper>
 
                             <Paper variant="outlined" sx={{ p: 2, gridColumn: '1 / -1' }}>
