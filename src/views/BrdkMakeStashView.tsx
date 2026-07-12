@@ -44,6 +44,8 @@ interface BrdkMakeStashViewProps {
 type MakeStashTab = 'basic' | 'locations' | 'presets';
 type PresetsSubTab = 'tiers' | 'library';
 
+const FIELD_GRID_SX = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 2 } as const;
+
 // Тир спавна тайника (SpawnTierList) — PresetList/PresetListGaranted ссылаются на PresetName
 // из библиотеки пресетов, поэтому даём выбор из уже существующих имён (плюс свободный ввод).
 const TierNameChipList = ({ values, onChange, options }: { values: string[]; onChange: (v: string[]) => void; options: string[] }) => {
@@ -179,12 +181,12 @@ export const BrdkMakeStashView = ({ data, onChange }: BrdkMakeStashViewProps) =>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                 {t('brdkMakeStash.sections.general')}
                             </Typography>
-                            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
-                                <TextField label="DebugStash" size="small" type="number" value={data.DebugStash ?? 0} onChange={(e) => patch({ DebugStash: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                                <TextField label="IgnoreChance" size="small" type="number" value={data.IgnoreChance ?? 0} onChange={(e) => patch({ IgnoreChance: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                                <TextField label="BleedChance" size="small" type="number" value={data.BleedChance ?? 0} onChange={(e) => patch({ BleedChance: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                                <TextField label="GlovesDamage" size="small" type="number" value={data.GlovesDamage ?? 0} onChange={(e) => patch({ GlovesDamage: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                            </Stack>
+                            <Box sx={FIELD_GRID_SX}>
+                                <TextField label="DebugStash" size="small" type="number" value={data.DebugStash ?? 0} onChange={(e) => patch({ DebugStash: Number(e.target.value) || 0 })} />
+                                <TextField label="IgnoreChance" size="small" type="number" value={data.IgnoreChance ?? 0} onChange={(e) => patch({ IgnoreChance: Number(e.target.value) || 0 })} />
+                                <TextField label="BleedChance" size="small" type="number" value={data.BleedChance ?? 0} onChange={(e) => patch({ BleedChance: Number(e.target.value) || 0 })} />
+                                <TextField label="GlovesDamage" size="small" type="number" value={data.GlovesDamage ?? 0} onChange={(e) => patch({ GlovesDamage: Number(e.target.value) || 0 })} />
+                            </Box>
                         </Paper>
                         <Paper variant="outlined" sx={{ p: 2 }}>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
@@ -248,27 +250,21 @@ export const BrdkMakeStashView = ({ data, onChange }: BrdkMakeStashViewProps) =>
                                     {!selectedTier ? (
                                         <Typography color="text.secondary">{t('brdkMakeStash.selectHint')}</Typography>
                                     ) : (
-                                        <Stack spacing={1.5} sx={{ maxWidth: 520 }}>
-                                            <TextField label="SpawnItemStash" size="small" value={selectedTier.SpawnItemStash} onChange={(e) => patchTier(selectedTierIdx, { SpawnItemStash: e.target.value })} />
-                                            <TextField label="SpawnLootItemStash" size="small" value={selectedTier.SpawnLootItemStash} onChange={(e) => patchTier(selectedTierIdx, { SpawnLootItemStash: e.target.value })} />
-                                            <TextField label="SpawnChest" size="small" value={selectedTier.SpawnChest} onChange={(e) => patchTier(selectedTierIdx, { SpawnChest: e.target.value })} />
-                                            <Stack direction="row" spacing={1.5}>
+                                        <Stack spacing={2.5} sx={{ maxWidth: 640 }}>
+                                            <Box sx={FIELD_GRID_SX}>
+                                                <TextField label="SpawnItemStash" size="small" value={selectedTier.SpawnItemStash} onChange={(e) => patchTier(selectedTierIdx, { SpawnItemStash: e.target.value })} />
+                                                <TextField label="SpawnLootItemStash" size="small" value={selectedTier.SpawnLootItemStash} onChange={(e) => patchTier(selectedTierIdx, { SpawnLootItemStash: e.target.value })} />
+                                                <TextField label="SpawnChest" size="small" value={selectedTier.SpawnChest} onChange={(e) => patchTier(selectedTierIdx, { SpawnChest: e.target.value })} />
                                                 <TextField label="MinSpawnChance" size="small" type="number" value={selectedTier.MinSpawnChance} onChange={(e) => patchTier(selectedTierIdx, { MinSpawnChance: Number(e.target.value) || 0 })} />
                                                 <TextField label="MaxSpawnChance" size="small" type="number" value={selectedTier.MaxSpawnChance} onChange={(e) => patchTier(selectedTierIdx, { MaxSpawnChance: Number(e.target.value) || 0 })} />
-                                            </Stack>
-                                            <Stack direction="row" spacing={1.5}>
                                                 <TextField label="DeleteChestTimer" size="small" type="number" value={selectedTier.DeleteChestTimer} onChange={(e) => patchTier(selectedTierIdx, { DeleteChestTimer: Number(e.target.value) || 0 })} />
                                                 <TextField label="RespawnLoot" size="small" type="number" value={selectedTier.RespawnLoot} onChange={(e) => patchTier(selectedTierIdx, { RespawnLoot: Number(e.target.value) || 0 })} />
-                                            </Stack>
-                                            <Stack direction="row" spacing={1.5}>
                                                 <TextField label="RespawnLootTimerMix" size="small" type="number" value={selectedTier.RespawnLootTimerMix} onChange={(e) => patchTier(selectedTierIdx, { RespawnLootTimerMix: Number(e.target.value) || 0 })} />
                                                 <TextField label="RespawnLootTimerMax" size="small" type="number" value={selectedTier.RespawnLootTimerMax} onChange={(e) => patchTier(selectedTierIdx, { RespawnLootTimerMax: Number(e.target.value) || 0 })} />
-                                            </Stack>
-                                            <Stack direction="row" spacing={1.5}>
                                                 <TextField label="ExplosionChance" size="small" type="number" value={selectedTier.ExplosionChance} onChange={(e) => patchTier(selectedTierIdx, { ExplosionChance: Number(e.target.value) || 0 })} />
                                                 <TextField label="ExpljsionRadius" size="small" type="number" value={selectedTier.ExpljsionRadius} onChange={(e) => patchTier(selectedTierIdx, { ExpljsionRadius: Number(e.target.value) || 0 })} />
                                                 <TextField label="ExplosionDamage" size="small" type="number" value={selectedTier.ExplosionDamage} onChange={(e) => patchTier(selectedTierIdx, { ExplosionDamage: Number(e.target.value) || 0 })} />
-                                            </Stack>
+                                            </Box>
                                             <Box>
                                                 <Typography variant="caption" color="text.secondary">PresetList</Typography>
                                                 <TierNameChipList values={selectedTier.PresetList} onChange={(v) => patchTier(selectedTierIdx, { PresetList: v })} options={presetNames} />
@@ -307,12 +303,12 @@ export const BrdkMakeStashView = ({ data, onChange }: BrdkMakeStashViewProps) =>
                                     {!selectedPreset ? (
                                         <Typography color="text.secondary">{t('brdkMakeStash.selectHint')}</Typography>
                                     ) : (
-                                        <Stack spacing={2}>
-                                            <Stack direction="row" spacing={1.5}>
+                                        <Stack spacing={2.5}>
+                                            <Box sx={{ ...FIELD_GRID_SX, maxWidth: 640 }}>
                                                 <TextField label="PresetName" size="small" value={selectedPreset.PresetName} onChange={(e) => patchPreset(selectedPresetIdx, { PresetName: e.target.value })} />
                                                 <TextField label="MinLootCount" size="small" type="number" value={selectedPreset.MinLootCount} onChange={(e) => patchPreset(selectedPresetIdx, { MinLootCount: Number(e.target.value) || 0 })} />
                                                 <TextField label="MaxLootCount" size="small" type="number" value={selectedPreset.MaxLootCount} onChange={(e) => patchPreset(selectedPresetIdx, { MaxLootCount: Number(e.target.value) || 0 })} />
-                                            </Stack>
+                                            </Box>
                                             <Stack spacing={1.5}>
                                                 {selectedPreset.StashPresetCfgList.map((item, i) => (
                                                     <Paper key={i} variant="outlined" sx={{ p: 1.5 }}>
@@ -329,11 +325,11 @@ export const BrdkMakeStashView = ({ data, onChange }: BrdkMakeStashViewProps) =>
                                                                 <Typography variant="caption" color="text.secondary">ItemName</Typography>
                                                                 <StringChipList values={item.ItemName} onChange={(v) => patchPresetItem(i, { ItemName: v })} placeholder="ClassName" />
                                                             </Box>
-                                                            <Stack direction="row" spacing={1.5}>
+                                                            <Box sx={FIELD_GRID_SX}>
                                                                 <TextField label="SpawnChance" size="small" type="number" value={item.SpawnChance} onChange={(e) => patchPresetItem(i, { SpawnChance: Number(e.target.value) || 0 })} />
                                                                 <TextField label="ItemQuantity" size="small" type="number" value={item.ItemQuantity} onChange={(e) => patchPresetItem(i, { ItemQuantity: Number(e.target.value) })} />
                                                                 <TextField label="ItemHealth" size="small" type="number" value={item.ItemHealth} onChange={(e) => patchPresetItem(i, { ItemHealth: Number(e.target.value) })} />
-                                                            </Stack>
+                                                            </Box>
                                                             <Box>
                                                                 <Typography variant="caption" color="text.secondary">StashAttachesItemList</Typography>
                                                                 <StringChipList values={item.StashAttachesItemList} onChange={(v) => patchPresetItem(i, { StashAttachesItemList: v })} placeholder="ClassName" />

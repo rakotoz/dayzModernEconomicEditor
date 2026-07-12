@@ -16,6 +16,8 @@ interface BrdkSuperHousesViewProps {
 
 type SuperHousesTab = 'basic' | 'houses' | 'kits';
 
+const FIELD_GRID_SX = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 2 } as const;
+
 // profiles/BRDK_MODS/SuperHouses.json — общие настройки рейдов отдельно от списка домов
 // (лимиты жильцов, наличие воды) и отдельно от наборов материалов для постройки (KitDataList).
 export const BrdkSuperHousesView = ({ data, onChange }: BrdkSuperHousesViewProps) => {
@@ -64,23 +66,23 @@ export const BrdkSuperHousesView = ({ data, onChange }: BrdkSuperHousesViewProps
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                 {t('brdkSuperHouses.sections.raid')}
                             </Typography>
-                            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
-                                <TextField label="RaidEnable" size="small" type="number" value={data.RaidEnable ?? 0} onChange={(e) => patch({ RaidEnable: Number(e.target.value) || 0 })} sx={{ width: 130 }} />
-                                <TextField label="RaidTime" size="small" type="number" value={data.RaidTime ?? 0} onChange={(e) => patch({ RaidTime: Number(e.target.value) || 0 })} sx={{ width: 130 }} />
-                                <TextField label="ToolDamade" size="small" type="number" value={data.ToolDamade ?? 0} onChange={(e) => patch({ ToolDamade: Number(e.target.value) || 0 })} sx={{ width: 130 }} />
-                                <TextField label="SearchPlayerRadius" size="small" type="number" value={data.SearchPlayerRadius ?? 0} onChange={(e) => patch({ SearchPlayerRadius: Number(e.target.value) || 0 })} sx={{ width: 170 }} />
-                                <TextField label="AutoCloseEnable" size="small" type="number" value={data.AutoCloseEnable ?? 0} onChange={(e) => patch({ AutoCloseEnable: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                            </Stack>
+                            <Box sx={FIELD_GRID_SX}>
+                                <TextField label="RaidEnable" size="small" type="number" value={data.RaidEnable ?? 0} onChange={(e) => patch({ RaidEnable: Number(e.target.value) || 0 })} />
+                                <TextField label="RaidTime" size="small" type="number" value={data.RaidTime ?? 0} onChange={(e) => patch({ RaidTime: Number(e.target.value) || 0 })} />
+                                <TextField label="ToolDamade" size="small" type="number" value={data.ToolDamade ?? 0} onChange={(e) => patch({ ToolDamade: Number(e.target.value) || 0 })} />
+                                <TextField label="SearchPlayerRadius" size="small" type="number" value={data.SearchPlayerRadius ?? 0} onChange={(e) => patch({ SearchPlayerRadius: Number(e.target.value) || 0 })} />
+                                <TextField label="AutoCloseEnable" size="small" type="number" value={data.AutoCloseEnable ?? 0} onChange={(e) => patch({ AutoCloseEnable: Number(e.target.value) || 0 })} />
+                            </Box>
                         </Paper>
                         <Paper variant="outlined" sx={{ p: 2 }}>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                 {t('brdkSuperHouses.sections.storage')}
                             </Typography>
-                            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
-                                <TextField label="IsJsonSave" size="small" type="number" value={data.IsJsonSave ?? 0} onChange={(e) => patch({ IsJsonSave: Number(e.target.value) || 0 })} sx={{ width: 130 }} />
-                                <TextField label="IsJsonStoreSave" size="small" type="number" value={data.IsJsonStoreSave ?? 0} onChange={(e) => patch({ IsJsonStoreSave: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                                <TextField label="IsJsonStoreLoad" size="small" type="number" value={data.IsJsonStoreLoad ?? 0} onChange={(e) => patch({ IsJsonStoreLoad: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                            </Stack>
+                            <Box sx={FIELD_GRID_SX}>
+                                <TextField label="IsJsonSave" size="small" type="number" value={data.IsJsonSave ?? 0} onChange={(e) => patch({ IsJsonSave: Number(e.target.value) || 0 })} />
+                                <TextField label="IsJsonStoreSave" size="small" type="number" value={data.IsJsonStoreSave ?? 0} onChange={(e) => patch({ IsJsonStoreSave: Number(e.target.value) || 0 })} />
+                                <TextField label="IsJsonStoreLoad" size="small" type="number" value={data.IsJsonStoreLoad ?? 0} onChange={(e) => patch({ IsJsonStoreLoad: Number(e.target.value) || 0 })} />
+                            </Box>
                         </Paper>
                         <Paper variant="outlined" sx={{ p: 2 }}>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
@@ -123,7 +125,7 @@ export const BrdkSuperHousesView = ({ data, onChange }: BrdkSuperHousesViewProps
                         addLabel={t('brdkSuperHouses.addKit')}
                         selectHint={t('brdkSuperHouses.selectHint')}
                         fields={[
-                            { key: 'KitType', label: 'KitType', width: 220 },
+                            { key: 'KitType', label: 'KitType' },
                             { key: 'NailsCount', label: 'NailsCount', type: 'number' },
                             { key: 'MetalSheetsCount', label: 'MetalSheetsCount', type: 'number' },
                             { key: 'WoodenLogsCount', label: 'WoodenLogsCount', type: 'number' },

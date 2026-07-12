@@ -13,6 +13,9 @@ import { BrdkGoldRushView } from './BrdkGoldRushView';
 import { BrdkSuperHousesView } from './BrdkSuperHousesView';
 import { BrdkZmbPresetView } from './BrdkZmbPresetView';
 import { BrdkMapCleanerView } from './BrdkMapCleanerView';
+import { BrdkGammaRayView } from './BrdkGammaRayView';
+import { BrdkArtsView } from './BrdkArtsView';
+import { BrdkAdminMenuView } from './BrdkAdminMenuView';
 
 type ViewStatus = 'detecting' | 'loading' | 'ready' | 'error';
 
@@ -104,16 +107,19 @@ export const BrdkConfigView = () => {
     // в одну кучу — по просьбе пользователя у каждого из них свой экран с понятными вкладками
     // вместо generic-формы; для незнакомых файлов (новые моды BRDK в будущем) остаётся fallback.
     const DEDICATED_VIEWS: Record<string, React.ComponentType<{ data: Record<string, JsonValue>; onChange: (next: Record<string, JsonValue>) => void }>> = {
-        'MakeStash/MakeStash': BrdkMakeStashView,
+        MakeStash: BrdkMakeStashView,
+        Arts: BrdkArtsView,
+        BRDK_AdminMenu: BrdkAdminMenuView,
         GoldRush: BrdkGoldRushView,
         SuperHouses: BrdkSuperHousesView,
         ZmbPreset: BrdkZmbPresetView,
         MapCleaner: BrdkMapCleanerView,
+        GammaRay: BrdkGammaRayView,
     };
     const DedicatedView = selectedEntry ? DEDICATED_VIEWS[selectedEntry.label] : undefined;
     // Экраны с собственными вкладками сами управляют скроллом/отступами внутри себя —
     // внешняя обёртка не должна добавлять padding и общий overflow поверх них.
-    const isTabbedView = Boolean(selectedEntry && ['MakeStash/MakeStash', 'GoldRush', 'SuperHouses', 'ZmbPreset'].includes(selectedEntry.label));
+    const isTabbedView = Boolean(selectedEntry && ['MakeStash', 'Arts', 'GoldRush', 'SuperHouses', 'ZmbPreset', 'GammaRay'].includes(selectedEntry.label));
 
     const handleSave = async () => {
         setSaving(true);

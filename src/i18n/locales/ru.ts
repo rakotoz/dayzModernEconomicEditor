@@ -631,6 +631,40 @@ export const ru = {
             onPlayer: 'Предметы для очистки у игрока',
         },
     },
+    brdkGammaRay: {
+        tabs: {
+            basic: 'Общее',
+            settings: 'Детектор',
+            zones: 'Зоны ({{count}})',
+        },
+        sections: {
+            timing: 'Таймеры',
+            damage: 'Урон и лут',
+            notifications: 'Уведомления',
+            detector: 'Настройки детектора аномалий',
+        },
+        addZone: 'Добавить зону',
+        selectHint: 'Выберите зону слева',
+    },
+    brdkArts: {
+        tabs: {
+            basic: 'Общее',
+            agents: 'Агенты заражения ({{count}})',
+            arts: 'Артефакты ({{count}})',
+        },
+        sections: {
+            general: 'Общие настройки',
+        },
+        addAgent: 'Добавить агента',
+        addArt: 'Добавить артефакт',
+        selectHint: 'Выберите артефакт слева',
+    },
+    brdkAdminMenu: {
+        sections: {
+            admins: 'Администраторы (SteamID64)',
+            logging: 'Логирование',
+        },
+    },
 };
 
 export type TranslationSchema = typeof ru;

@@ -14,6 +14,8 @@ interface BrdkZmbPresetViewProps {
 
 type ZmbPresetTab = 'basic' | 'zombies';
 
+const FIELD_GRID_SX = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 2 } as const;
+
 // profiles/BRDK_MODS/ZmbPreset.json — общие настройки поиска лута отдельно от списка зомби
 // с их наборами (ZmbPresetList): список зомби слева, справа для выбранного — карточки
 // весовых корзин лута с диапазоном шанса и списком предметов.
@@ -68,14 +70,14 @@ export const BrdkZmbPresetView = ({ data, onChange }: BrdkZmbPresetViewProps) =>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                 {t('brdkZmbPreset.sections.general')}
                             </Typography>
-                            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
-                                <TextField label="ZmbSearchTime" size="small" type="number" value={data.ZmbSearchTime ?? 0} onChange={(e) => patch({ ZmbSearchTime: Number(e.target.value) || 0 })} sx={{ width: 160 }} />
-                                <TextField label="PlayerSearchTime" size="small" type="number" value={data.PlayerSearchTime ?? 0} onChange={(e) => patch({ PlayerSearchTime: Number(e.target.value) || 0 })} sx={{ width: 160 }} />
-                                <TextField label="IsNeedSearch" size="small" type="number" value={data.IsNeedSearch ?? 0} onChange={(e) => patch({ IsNeedSearch: Number(e.target.value) || 0 })} sx={{ width: 150 }} />
-                                <TextField label="IsNeedSearchPlayer" size="small" type="number" value={data.IsNeedSearchPlayer ?? 0} onChange={(e) => patch({ IsNeedSearchPlayer: Number(e.target.value) || 0 })} sx={{ width: 170 }} />
-                                <TextField label="PersonalZmbOpen" size="small" type="number" value={data.PersonalZmbOpen ?? 0} onChange={(e) => patch({ PersonalZmbOpen: Number(e.target.value) || 0 })} sx={{ width: 160 }} />
-                                <TextField label="PersonalPlayerOpen" size="small" type="number" value={data.PersonalPlayerOpen ?? 0} onChange={(e) => patch({ PersonalPlayerOpen: Number(e.target.value) || 0 })} sx={{ width: 170 }} />
-                            </Stack>
+                            <Box sx={FIELD_GRID_SX}>
+                                <TextField label="ZmbSearchTime" size="small" type="number" value={data.ZmbSearchTime ?? 0} onChange={(e) => patch({ ZmbSearchTime: Number(e.target.value) || 0 })} />
+                                <TextField label="PlayerSearchTime" size="small" type="number" value={data.PlayerSearchTime ?? 0} onChange={(e) => patch({ PlayerSearchTime: Number(e.target.value) || 0 })} />
+                                <TextField label="IsNeedSearch" size="small" type="number" value={data.IsNeedSearch ?? 0} onChange={(e) => patch({ IsNeedSearch: Number(e.target.value) || 0 })} />
+                                <TextField label="IsNeedSearchPlayer" size="small" type="number" value={data.IsNeedSearchPlayer ?? 0} onChange={(e) => patch({ IsNeedSearchPlayer: Number(e.target.value) || 0 })} />
+                                <TextField label="PersonalZmbOpen" size="small" type="number" value={data.PersonalZmbOpen ?? 0} onChange={(e) => patch({ PersonalZmbOpen: Number(e.target.value) || 0 })} />
+                                <TextField label="PersonalPlayerOpen" size="small" type="number" value={data.PersonalPlayerOpen ?? 0} onChange={(e) => patch({ PersonalPlayerOpen: Number(e.target.value) || 0 })} />
+                            </Box>
                         </Paper>
                     </Box>
                 )}
@@ -117,11 +119,11 @@ export const BrdkZmbPresetView = ({ data, onChange }: BrdkZmbPresetViewProps) =>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Stack>
-                                                <Stack spacing={1}>
-                                                    <Stack direction="row" spacing={1.5}>
+                                                <Stack spacing={1.5}>
+                                                    <Box sx={FIELD_GRID_SX}>
                                                         <TextField label="PresetChanceMin" size="small" type="number" value={preset.PresetChanceMin} onChange={(e) => patchPreset(i, { PresetChanceMin: Number(e.target.value) || 0 })} />
                                                         <TextField label="PresetChanceMax" size="small" type="number" value={preset.PresetChanceMax} onChange={(e) => patchPreset(i, { PresetChanceMax: Number(e.target.value) || 0 })} />
-                                                    </Stack>
+                                                    </Box>
                                                     <Box>
                                                         <Typography variant="caption" color="text.secondary">
                                                             ItemList

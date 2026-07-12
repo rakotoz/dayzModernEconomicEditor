@@ -7,7 +7,6 @@ export interface FlatFieldSpec {
     key: string;
     label: string;
     type?: 'text' | 'number';
-    width?: number;
 }
 
 interface FlatObjectListEditorProps<T extends Record<string, any>> {
@@ -78,7 +77,7 @@ export function FlatObjectListEditor<T extends Record<string, any>>({
                 {!selected ? (
                     <Typography color="text.secondary">{selectHint}</Typography>
                 ) : (
-                    <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5, maxWidth: 640 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 2, maxWidth: 760 }}>
                         {fields.map((f) => (
                             <TextField
                                 key={f.key}
@@ -89,10 +88,9 @@ export function FlatObjectListEditor<T extends Record<string, any>>({
                                 onChange={(e) =>
                                     patchItem({ [f.key]: f.type === 'number' ? Number(e.target.value) || 0 : e.target.value } as Partial<T>)
                                 }
-                                sx={{ width: f.width ?? 180 }}
                             />
                         ))}
-                    </Stack>
+                    </Box>
                 )}
             </Box>
         </Box>

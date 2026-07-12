@@ -3,7 +3,9 @@ import { JsonValue, parseJsonConfigFile, serializeJsonConfigFile } from './cfgGa
 import { basenamePath, joinPath } from './pathUtils';
 
 export interface BrdkConfigFile {
-    // Ключ для показа пользователю и сортировки: "GoldRush", "MakeStash/MakeStash" и т.д.
+    // Короткое имя мода для показа в списке и для выбора выделенного экрана в BrdkConfigView
+    // ("MakeStash", "GoldRush" и т.д.) — раньше для файлов из подпапок сюда попадал путь вида
+    // "MakeStash/MakeStash", что дублировало имя и не помещалось в список.
     label: string;
     filePath: string;
 }
@@ -12,7 +14,7 @@ export interface BrdkConfigFile {
 // служебными данными (логи, бэкапы, покоординатный рантайм-кэш заброшенных тайников/домов
 // в подпапках вроде MakeStash/Locations или HousesData). Верхний уровень папки сканируем
 // целиком, плюс явно заходим в известные подпапки с одиночным конфигом мода.
-const KNOWN_SUBCONFIGS = ['MakeStash/MakeStash.json'];
+const KNOWN_SUBCONFIGS = ['MakeStash/MakeStash.json', 'Arts/MainArts.json', 'BRDK_AdminMenu/BRDK_AdminMenuConfig.json'];
 
 export const findBrdkModsDir = async (project: Project): Promise<string | null> => {
     const res = await window.api.findDirRecursive(project.path, 'BRDK_MODS');
@@ -34,7 +36,7 @@ export const listBrdkConfigFiles = async (brdkModsDir: string): Promise<BrdkConf
         const filePath = joinPath(brdkModsDir, rel);
         const existsRes = await window.api.pathExists(filePath);
         if (existsRes.success && existsRes.data) {
-            files.push({ label: rel.replace(/\.json$/i, ''), filePath });
+            files.push({ label: rel.split('/')[0], filePath });
         }
     }
 

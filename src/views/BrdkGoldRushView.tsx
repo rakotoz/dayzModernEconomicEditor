@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Box, Paper, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { JsonValue } from '../dayzConfig/cfgGameplay';
 import { emptyOre, emptySand, emptyVein, OreData, SandData, VeinData } from '../dayzConfig/brdkGoldRush';
@@ -12,6 +12,8 @@ interface BrdkGoldRushViewProps {
 }
 
 type GoldRushTab = 'basic' | 'veins' | 'sand' | 'ore';
+
+const FIELD_GRID_SX = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 2 } as const;
 
 // profiles/BRDK_MODS/GoldRush.json — вместо общей RecursiveJsonForm: отдельные вкладки под
 // общие настройки, жилы руды, песок и слитки — эти три списка совершенно не связаны визуально
@@ -44,13 +46,13 @@ export const BrdkGoldRushView = ({ data, onChange }: BrdkGoldRushViewProps) => {
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
                                 {t('brdkGoldRush.sections.general')}
                             </Typography>
-                            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
-                                <TextField label="GoldInRiverSearchTime" size="small" type="number" value={data.GoldInRiverSearchTime ?? 0} onChange={(e) => patch({ GoldInRiverSearchTime: Number(e.target.value) || 0 })} sx={{ width: 200 }} />
-                                <TextField label="MinCountInRiver" size="small" type="number" value={data.MinCountInRiver ?? 0} onChange={(e) => patch({ MinCountInRiver: Number(e.target.value) || 0 })} sx={{ width: 160 }} />
-                                <TextField label="MaxCountInRiver" size="small" type="number" value={data.MaxCountInRiver ?? 0} onChange={(e) => patch({ MaxCountInRiver: Number(e.target.value) || 0 })} sx={{ width: 160 }} />
-                                <TextField label="MeltUpdatePeriod" size="small" type="number" value={data.MeltUpdatePeriod ?? 0} onChange={(e) => patch({ MeltUpdatePeriod: Number(e.target.value) || 0 })} sx={{ width: 170 }} />
-                                <TextField label="MeltTempTreshold" size="small" type="number" value={data.MeltTempTreshold ?? 0} onChange={(e) => patch({ MeltTempTreshold: Number(e.target.value) || 0 })} sx={{ width: 170 }} />
-                            </Stack>
+                            <Box sx={FIELD_GRID_SX}>
+                                <TextField label="GoldInRiverSearchTime" size="small" type="number" value={data.GoldInRiverSearchTime ?? 0} onChange={(e) => patch({ GoldInRiverSearchTime: Number(e.target.value) || 0 })} />
+                                <TextField label="MinCountInRiver" size="small" type="number" value={data.MinCountInRiver ?? 0} onChange={(e) => patch({ MinCountInRiver: Number(e.target.value) || 0 })} />
+                                <TextField label="MaxCountInRiver" size="small" type="number" value={data.MaxCountInRiver ?? 0} onChange={(e) => patch({ MaxCountInRiver: Number(e.target.value) || 0 })} />
+                                <TextField label="MeltUpdatePeriod" size="small" type="number" value={data.MeltUpdatePeriod ?? 0} onChange={(e) => patch({ MeltUpdatePeriod: Number(e.target.value) || 0 })} />
+                                <TextField label="MeltTempTreshold" size="small" type="number" value={data.MeltTempTreshold ?? 0} onChange={(e) => patch({ MeltTempTreshold: Number(e.target.value) || 0 })} />
+                            </Box>
                         </Paper>
                         <Paper variant="outlined" sx={{ p: 2 }}>
                             <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>
@@ -76,9 +78,9 @@ export const BrdkGoldRushView = ({ data, onChange }: BrdkGoldRushViewProps) => {
                         addLabel={t('brdkGoldRush.addVein')}
                         selectHint={t('brdkGoldRush.selectHint')}
                         fields={[
-                            { key: 'VeinName', label: 'VeinName', width: 220 },
-                            { key: 'GoodOre', label: 'GoodOre', width: 180 },
-                            { key: 'BadOre', label: 'BadOre', width: 180 },
+                            { key: 'VeinName', label: 'VeinName' },
+                            { key: 'GoodOre', label: 'GoodOre' },
+                            { key: 'BadOre', label: 'BadOre' },
                             { key: 'MinCount', label: 'MinCount', type: 'number' },
                             { key: 'MaxCount', label: 'MaxCount', type: 'number' },
                             { key: 'MinQuant', label: 'MinQuant', type: 'number' },
@@ -99,8 +101,8 @@ export const BrdkGoldRushView = ({ data, onChange }: BrdkGoldRushViewProps) => {
                         addLabel={t('brdkGoldRush.addSand')}
                         selectHint={t('brdkGoldRush.selectHint')}
                         fields={[
-                            { key: 'SandName', label: 'SandName', width: 220 },
-                            { key: 'OreName', label: 'OreName', width: 180 },
+                            { key: 'SandName', label: 'SandName' },
+                            { key: 'OreName', label: 'OreName' },
                             { key: 'SandChance', label: 'SandChance', type: 'number' },
                             { key: 'MinQuant', label: 'MinQuant', type: 'number' },
                             { key: 'MaxQuant', label: 'MaxQuant', type: 'number' },
@@ -118,8 +120,8 @@ export const BrdkGoldRushView = ({ data, onChange }: BrdkGoldRushViewProps) => {
                         addLabel={t('brdkGoldRush.addOre')}
                         selectHint={t('brdkGoldRush.selectHint')}
                         fields={[
-                            { key: 'OreName', label: 'OreName', width: 220 },
-                            { key: 'IngotName', label: 'IngotName', width: 220 },
+                            { key: 'OreName', label: 'OreName' },
+                            { key: 'IngotName', label: 'IngotName' },
                             { key: 'MeltPressTime', label: 'MeltPressTime', type: 'number' },
                         ]}
                     />

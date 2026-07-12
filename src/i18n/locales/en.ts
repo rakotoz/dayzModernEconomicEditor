@@ -633,4 +633,38 @@ export const en: TranslationSchema = {
             onPlayer: 'Items to clean on players',
         },
     },
+    brdkGammaRay: {
+        tabs: {
+            basic: 'Basic',
+            settings: 'Detector',
+            zones: 'Zones ({{count}})',
+        },
+        sections: {
+            timing: 'Timing',
+            damage: 'Damage & loot',
+            notifications: 'Notifications',
+            detector: 'Anomaly detector settings',
+        },
+        addZone: 'Add zone',
+        selectHint: 'Select a zone on the left',
+    },
+    brdkArts: {
+        tabs: {
+            basic: 'Basic',
+            agents: 'Infection agents ({{count}})',
+            arts: 'Artifacts ({{count}})',
+        },
+        sections: {
+            general: 'General settings',
+        },
+        addAgent: 'Add agent',
+        addArt: 'Add artifact',
+        selectHint: 'Select an artifact on the left',
+    },
+    brdkAdminMenu: {
+        sections: {
+            admins: 'Admins (SteamID64)',
+            logging: 'Logging',
+        },
+    },
 };
