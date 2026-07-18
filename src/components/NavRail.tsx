@@ -4,6 +4,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import DiamondIcon from '@mui/icons-material/Diamond';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -25,6 +26,7 @@ export const NavRail = () => {
     const currentProjectId = useAppSelector((state) => state.app.currentProjectId);
     const expansionModAvailable = useAppSelector((state) => state.app.expansionModAvailable);
     const brdkModAvailable = useAppSelector((state) => state.app.brdkModAvailable);
+    const revanModAvailable = useAppSelector((state) => state.app.revanModAvailable);
     const collapsed = useAppSelector((state) => state.app.navCollapsed);
     const themeMode = useAppSelector((state) => state.app.themeMode);
     const language = useAppSelector((state) => state.app.language);
@@ -37,6 +39,9 @@ export const NavRail = () => {
             : []),
         ...(brdkModAvailable && currentProjectId
             ? [{ path: '/brdk', label: t('nav.brdk'), icon: <DiamondIcon /> }]
+            : []),
+        ...(revanModAvailable && currentProjectId
+            ? [{ path: '/revan', label: t('nav.revan'), icon: <RocketLaunchIcon /> }]
             : []),
     ];
 

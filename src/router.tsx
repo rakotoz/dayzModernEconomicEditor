@@ -4,6 +4,7 @@ import { AppShell } from './components/AppShell';
 import { MainTemplate } from './components/MainTemplate';
 import { ExpansionPage } from './components/ExpansionPage';
 import { BrdkPage } from './components/BrdkPage';
+import { RevanPage } from './components/RevanPage';
 import { ProjectsView } from './views/ProjectsView';
 import { useAppSelector } from './store/hooks';
 
@@ -28,6 +29,14 @@ const BrdkRoute = () => {
     return <BrdkPage />;
 };
 
+const RevanRoute = () => {
+    const currentProjectId = useAppSelector((state) => state.app.currentProjectId);
+    const revanModAvailable = useAppSelector((state) => state.app.revanModAvailable);
+    if (!currentProjectId) return <Navigate to="/projects" replace />;
+    if (!revanModAvailable) return <Navigate to="/editor" replace />;
+    return <RevanPage />;
+};
+
 const router = createHashRouter([
     {
         path: '/',
@@ -38,6 +47,7 @@ const router = createHashRouter([
             { path: 'editor', element: <EditorRoute /> },
             { path: 'expansion', element: <ExpansionRoute /> },
             { path: 'brdk', element: <BrdkRoute /> },
+            { path: 'revan', element: <RevanRoute /> },
         ],
     },
 ]);

@@ -3,9 +3,10 @@ import { Box } from '@mui/material';
 import { Outlet } from 'react-router';
 import { NavRail } from './NavRail';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { selectCurrentProject, setExpansionModAvailable, setBrdkModAvailable } from '../store/slices/appSlice';
+import { selectCurrentProject, setExpansionModAvailable, setBrdkModAvailable, setRevanModAvailable } from '../store/slices/appSlice';
 import { detectExpansionMod } from '../dayzConfig/expansionMod';
 import { detectBrdkMod } from '../dayzConfig/brdkMod';
+import { detectRevanMod } from '../dayzConfig/revanMod';
 import { loadEconomyClassNamesByFileCached } from '../dayzConfig/typesXml';
 
 export const AppShell = () => {
@@ -31,6 +32,9 @@ export const AppShell = () => {
         });
         detectBrdkMod(currentProject).then((found) => {
             if (!cancelled) dispatch(setBrdkModAvailable(found));
+        });
+        detectRevanMod(currentProject).then((found) => {
+            if (!cancelled) dispatch(setRevanModAvailable(found));
         });
         return () => {
             cancelled = true;

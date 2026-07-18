@@ -16,6 +16,8 @@ export interface AppState {
     expansionModAvailable: boolean;
     // Аналогично expansionModAvailable, но для набора модов BRDK (папка profiles/BRDK_MODS).
     brdkModAvailable: boolean;
+    // Аналогично, но для наших модов Rev_* (папка profiles/Rev_mods).
+    revanModAvailable: boolean;
     // Инкрементируется при каждом setCurrentProjectId, даже если id совпадает с уже открытым
     // проектом (повторное «Открыть» после «К проектам») — AppShell использует это как доп.
     // зависимость эффекта детекции, т.к. project?.id/path и т.д. в этом случае не меняются.
@@ -35,6 +37,7 @@ const initialState: AppState = {
     language: persisted.language ?? 'ru',
     expansionModAvailable: false,
     brdkModAvailable: false,
+    revanModAvailable: false,
     projectOpenNonce: 0,
 };
 
@@ -73,6 +76,7 @@ const appSlice = createSlice({
             state.mods = [];
             state.expansionModAvailable = false;
             state.brdkModAvailable = false;
+            state.revanModAvailable = false;
             state.projectOpenNonce += 1;
         },
         setExpansionModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
@@ -80,6 +84,9 @@ const appSlice = createSlice({
         },
         setBrdkModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
             state.brdkModAvailable = action.payload;
+        },
+        setRevanModAvailable: (state: AppState, action: PayloadAction<boolean>) => {
+            state.revanModAvailable = action.payload;
         },
         setCurrentConfig: (state: AppState, action: PayloadAction<ConfigFile | null>) => {
             state.currentConfig = action.payload;
@@ -109,6 +116,7 @@ export const {
     setCurrentProjectId,
     setExpansionModAvailable,
     setBrdkModAvailable,
+    setRevanModAvailable,
     setCurrentConfig,
     setMods,
     toggleNavCollapsed,
