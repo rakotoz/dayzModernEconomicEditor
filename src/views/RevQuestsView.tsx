@@ -18,6 +18,45 @@ import { basenamePath } from '../dayzConfig/pathUtils';
 
 const boolField = (v: unknown) => v === 1 || v === true;
 
+// акцент-цвет квеста: галка + color-picker; хранится как int 0xRRGGBB (0 = дефолт)
+const ColorField = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
+    const enabled = value > 0;
+    const hex = '#' + (value & 0xffffff).toString(16).padStart(6, '0');
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <FormControlLabel control={<Checkbox size="small" checked={enabled} onChange={(e) => onChange(e.target.checked ? 0xf2c440 : 0)} />} label="Свой цвет (акцент)" />
+            {enabled && (
+                <>
+                    <input type="color" value={hex} onChange={(e) => onChange(parseInt(e.target.value.slice(1), 16))} style={{ width: 44, height: 32, padding: 0, border: 'none', background: 'none', cursor: 'pointer' }} />
+                    <Typography variant="caption" color="text.secondary">{hex.toUpperCase()} — красит название квеста в HUD, меню NPC и панели</Typography>
+                </>
+            )}
+        </Box>
+    );
+};
+
+// удобный ввод лимита времени: галка + Часы/Минуты/Секунды -> секунды (-1 = без лимита)
+const DurationField = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
+    const enabled = value > 0;
+    const h = enabled ? Math.floor(value / 3600) : 0;
+    const m = enabled ? Math.floor((value % 3600) / 60) : 0;
+    const s = enabled ? value % 60 : 0;
+    const setPart = (nh: number, nm: number, ns: number) => onChange(Math.max(0, nh) * 3600 + Math.max(0, nm) * 60 + Math.max(0, ns));
+    return (
+        <Box>
+            <FormControlLabel control={<Checkbox size="small" checked={enabled} onChange={(e) => onChange(e.target.checked ? 3600 : -1)} />} label="Лимит времени" />
+            {enabled && (
+                <Stack direction="row" spacing={1} sx={{ mt: 0.5, alignItems: 'center' }}>
+                    <TextField label="Часы" size="small" type="number" value={h} onChange={(e) => setPart(Number(e.target.value), m, s)} sx={{ width: 90 }} />
+                    <TextField label="Мин" size="small" type="number" value={m} onChange={(e) => setPart(h, Number(e.target.value), s)} sx={{ width: 90 }} />
+                    <TextField label="Сек" size="small" type="number" value={s} onChange={(e) => setPart(h, m, Number(e.target.value))} sx={{ width: 90 }} />
+                    <Typography variant="caption" color="text.secondary">= {value} сек</Typography>
+                </Stack>
+            )}
+        </Box>
+    );
+};
+
 // ---- переиспользуемые редакторы (module-level, чтобы не терять фокус) ----
 const NumberChips = ({ label, values, onChange }: { label: string; values: number[]; onChange: (v: number[]) => void }) => {
     const [d, setD] = useState('');
@@ -341,6 +380,7 @@ export const RevQuestsView = () => {
                                         <TextField label="Title" size="small" fullWidth value={q.Title ?? ''} onChange={(e) => patchQuest({ Title: e.target.value })} />
                                     </Stack>
                                     <TextField label="ObjectiveText (короткая строка цели)" size="small" fullWidth value={q.ObjectiveText ?? ''} onChange={(e) => patchQuest({ ObjectiveText: e.target.value })} />
+                                    <ColorField value={typeof q.QuestColor === 'number' ? q.QuestColor : 0} onChange={(v) => patchQuest({ QuestColor: v })} />
                                     <TextField label="Описание: до принятия" size="small" fullWidth multiline value={q.DescriptionStart ?? ''} onChange={(e) => patchQuest({ DescriptionStart: e.target.value })} />
                                     <TextField label="Описание: в процессе" size="small" fullWidth multiline value={q.DescriptionInProgress ?? ''} onChange={(e) => patchQuest({ DescriptionInProgress: e.target.value })} />
                                     <TextField label="Описание: готов к сдаче" size="small" fullWidth multiline value={q.DescriptionInEnd ?? ''} onChange={(e) => patchQuest({ DescriptionInEnd: e.target.value })} />
@@ -408,10 +448,8 @@ export const RevQuestsView = () => {
                                                 </Stack>
                                                 {entry ? (
                                                     <Stack spacing={1.5}>
-                                                        <Stack direction="row" spacing={1.5}>
-                                                            <TextField label="ObjectiveText" size="small" fullWidth value={entry.data.ObjectiveText ?? ''} onChange={(e) => patchObjective(ref.ID, { ObjectiveText: e.target.value })} />
-                                                            <TextField label="TimeLimit" size="small" type="number" value={entry.data.TimeLimit ?? -1} onChange={(e) => patchObjective(ref.ID, { TimeLimit: Number(e.target.value) })} sx={{ width: 120 }} />
-                                                        </Stack>
+                                                        <TextField label="ObjectiveText" size="small" fullWidth value={entry.data.ObjectiveText ?? ''} onChange={(e) => patchObjective(ref.ID, { ObjectiveText: e.target.value })} />
+                                                        <DurationField value={typeof entry.data.TimeLimit === 'number' ? entry.data.TimeLimit : -1} onChange={(v) => patchObjective(ref.ID, { TimeLimit: v })} />
                                                         <ObjectiveTypeForm o={entry.data} onChange={(p) => patchObjective(ref.ID, p)} />
                                                         {dirtyObjIds.has(ref.ID) && <Typography variant="caption" color="warning.main">● цель изменена</Typography>}
                                                     </Stack>

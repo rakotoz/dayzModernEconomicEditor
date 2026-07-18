@@ -13,6 +13,7 @@ export interface RevQuest {
     DescriptionInProgress: string;
     DescriptionInEnd: string;
     ObjectiveText: string;
+    QuestColor: number;   // акцент-цвет 0xRRGGBB (0 = дефолт)
     FollowUpQuest: number;
     PreQuestIDs: number[];
     Repeatable: number;
@@ -96,7 +97,7 @@ export const emptyReward = (): RevReward => ({ ClassName: '', Amount: 1, HealthP
 
 export const emptyQuest = (id: number): RevQuest => ({
     ID: id, Title: 'Новый квест', DescriptionStart: '', DescriptionInProgress: '', DescriptionInEnd: '',
-    ObjectiveText: '', FollowUpQuest: 0, PreQuestIDs: [], Repeatable: 0, IsDailyQuest: 0, IsWeeklyQuest: 0,
+    ObjectiveText: '', QuestColor: 0, FollowUpQuest: 0, PreQuestIDs: [], Repeatable: 0, IsDailyQuest: 0, IsWeeklyQuest: 0,
     IsGroupQuest: 0, AutoStartOnFirstJoin: 0, CancelQuestOnPlayerDeath: 0, Autocomplete: 0, Rewards: [],
     RankPointsReward: 0, RequiredRank: -1, QuestGiverIDs: [], QuestTurnInIDs: [], Objectives: [],
     SequentialObjectives: 1, Active: 1,
