@@ -33,6 +33,8 @@ const KNOWN_CONFIGS: { key: string; rel: string; label: string }[] = [
     { key: 'panelAdmins', rel: 'Rev_Panel/PanelConfig.json', label: 'Panel — админы' },
     { key: 'panelCross', rel: 'Rev_Panel/CrossConfig.json', label: 'Panel — кресты (Cross)' },
     { key: 'panelRoulette', rel: 'Rev_Panel/RouletteConfig.json', label: 'Panel — рулетка' },
+    { key: 'vstorageConfig', rel: 'Rev_VStorage/StorageConfig.json', label: 'VStorage — конфиг' },
+    { key: 'vstorageTerminals', rel: 'Rev_VStorage/Terminals.json', label: 'VStorage — терминалы' },
 ];
 
 export const listRevanConfigFiles = async (revModsDir: string): Promise<RevanConfigFile[]> => {
