@@ -77,6 +77,125 @@ const KeyValueMap = ({ label, keyPlaceholder, value, onChange }: { label: string
     );
 };
 
+// --- гейтинг предметов ------------------------------------------------------
+// В моде список ExcludeItemsList НЕ накопительный: предмет запрещён, если он
+// есть в списке ТЕКУЩЕГО ранга. Чтобы ствол открылся на 10-м, его надо
+// перечислить у рангов с 1 по 9 — руками это 30 копий с вычитанием.
+// Здесь редактируем в удобном виде «предмет → с какого ранга доступен», а
+// разворачивание по рангам делает applyGating.
+type GateRow = { cls: string; rank: number; broken: boolean };
+
+const rankLevel = (r: Rank, i: number) => (typeof r.Level === 'number' && r.Level > 0 ? (r.Level as number) : i + 1);
+const rankExcl = (r: Rank): string[] => (Array.isArray(r.ExcludeItemsList) ? (r.ExcludeItemsList as string[]) : []);
+
+const deriveGating = (ranks: Rank[]): GateRow[] => {
+    const levels = new Map<string, number[]>();
+    ranks.forEach((r, i) => {
+        const L = rankLevel(r, i);
+        rankExcl(r).forEach((cls) => {
+            if (!levels.has(cls)) levels.set(cls, []);
+            levels.get(cls)!.push(L);
+        });
+    });
+    const rows: GateRow[] = [];
+    levels.forEach((ls, cls) => {
+        const sorted = [...ls].sort((a, b) => a - b);
+        const max = sorted[sorted.length - 1];
+        // корректный запрет идёт сплошняком с 1-го ранга до max; дыры означают,
+        // что список правили руками — покажем как «сломанный»
+        const contiguous = sorted.length === max && sorted.every((v, k) => v === k + 1);
+        rows.push({ cls, rank: max + 1, broken: !contiguous });
+    });
+    return rows.sort((a, b) => a.rank - b.rank || a.cls.localeCompare(b.cls));
+};
+
+const applyGating = (ranks: Rank[], rows: GateRow[]): Rank[] =>
+    ranks.map((r, i) => {
+        const L = rankLevel(r, i);
+        // на ранге L запрещено всё, что открывается ПОЗЖЕ него
+        const list = rows.filter((x) => x.rank > L).map((x) => x.cls).sort();
+        return { ...r, ExcludeItemsList: list as unknown as JsonValue };
+    });
+
+const GatingTable = ({ ranks, onChange }: { ranks: Rank[]; onChange: (next: Rank[]) => void }) => {
+    const [cls, setCls] = useState('');
+    const [rank, setRank] = useState('2');
+    const rows = deriveGating(ranks);
+    const maxLevel = ranks.length ? Math.max(...ranks.map(rankLevel)) : 0;
+    const write = (next: GateRow[]) => onChange(applyGating(ranks, next));
+
+    const add = () => {
+        const name = cls.trim();
+        const r = Number(rank);
+        if (!name || !Number.isInteger(r) || r < 2 || r > maxLevel) return;
+        write([...rows.filter((x) => x.cls !== name), { cls: name, rank: r, broken: false }]);
+        setCls('');
+    };
+
+    const byRank = new Map<number, GateRow[]>();
+    rows.forEach((r) => {
+        if (!byRank.has(r.rank)) byRank.set(r.rank, []);
+        byRank.get(r.rank)!.push(r);
+    });
+    const dupInfo = rows.filter((r) => r.broken);
+
+    return (
+        <Stack spacing={2}>
+            <Typography variant="caption" color="text.secondary">
+                Предмет закрыт до указанного ранга. Списки запретов у всех рангов пересобираются автоматически —
+                вручную их править больше не нужно. Ранг 1 = доступно всем, такие предметы просто не указывайте.
+            </Typography>
+
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <TextField size="small" label="ClassName" placeholder="точное имя класса" value={cls} onChange={(e) => setCls(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} sx={{ width: 280 }} />
+                <TextField size="small" type="number" label="доступен с ранга" value={rank} onChange={(e) => setRank(e.target.value)} sx={{ width: 150 }} />
+                <Button size="small" startIcon={<AddIcon />} onClick={add} disabled={!cls.trim()}>
+                    Добавить
+                </Button>
+                <Box sx={{ flex: 1 }} />
+                <Typography variant="caption" color="text.secondary">
+                    предметов: {rows.length}
+                </Typography>
+            </Stack>
+
+            {dupInfo.length > 0 && (
+                <Typography variant="caption" color="warning.main">
+                    Списки правились вручную и идут с пропусками: {dupInfo.map((d) => d.cls).join(', ')}. Любое изменение здесь приведёт их к порядку.
+                </Typography>
+            )}
+
+            {[...byRank.keys()].sort((a, b) => a - b).map((lvl) => {
+                const rk = ranks.find((r, i) => rankLevel(r, i) === lvl);
+                const name = rk && typeof rk.Name === 'string' ? rk.Name : '';
+                return (
+                    <Box key={lvl}>
+                        <Typography variant="caption" color="text.secondary">
+                            с ранга {lvl} {name && `· ${name}`} <Typography component="span" variant="caption" color="text.disabled">· {byRank.get(lvl)!.length}</Typography>
+                        </Typography>
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', rowGap: 0.5, mt: 0.5 }}>
+                            {byRank.get(lvl)!.map((r) => (
+                                <Chip
+                                    key={r.cls}
+                                    label={r.cls}
+                                    size="small"
+                                    color={r.broken ? 'warning' : 'default'}
+                                    onDelete={() => write(rows.filter((x) => x.cls !== r.cls))}
+                                />
+                            ))}
+                        </Stack>
+                    </Box>
+                );
+            })}
+
+            {rows.length === 0 && (
+                <Typography variant="caption" color="text.disabled">
+                    Пусто — сейчас все предметы доступны с первого ранга.
+                </Typography>
+            )}
+        </Stack>
+    );
+};
+
 const RANK_NUMS: { k: string; label: string }[] = [
     { k: 'RankPoints', label: 'Порог очков' },
     { k: 'AddPointsKillAI', label: 'За killAI' },
@@ -121,7 +240,7 @@ const RankAccordion = ({ rank, index, onChange, onDelete }: { rank: Rank; index:
                         ))}
                     </Box>
                     <KeyValueMap label="Подарки за ранг (AddRankGiftList)" keyPlaceholder="ClassName" value={map('AddRankGiftList')} onChange={(v) => set({ AddRankGiftList: v as unknown as JsonValue })} />
-                    <StringChips label="Запрещённые предметы (ExcludeItemsList)" placeholder="ClassName" values={excl} onChange={(v) => set({ ExcludeItemsList: v as unknown as JsonValue })} />
+                    <StringChips label="Запрещённые предметы (ExcludeItemsList) — обычно правится через «Гейтинг предметов» выше" placeholder="ClassName" values={excl} onChange={(v) => set({ ExcludeItemsList: v as unknown as JsonValue })} />
                     <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                         <StringChips label="StopActionList" placeholder="ActionName" values={arr('StopActionList')} onChange={(v) => set({ StopActionList: v as unknown as JsonValue })} />
                         <StringChips label="StopActionBelowRanks" placeholder="ActionName" values={arr('StopActionBelowRanks')} onChange={(v) => set({ StopActionBelowRanks: v as unknown as JsonValue })} />
@@ -182,6 +301,13 @@ export const RevRanksConfigView = ({ data, onChange }: Props) => {
                     <KeyValueMap label="За рецепты (RecipesAddPoints)" keyPlaceholder="RecipeName" value={map('RecipesAddPoints')} onChange={(v) => set({ RecipesAddPoints: v as unknown as JsonValue })} />
                     <KeyValueMap label="Книги опыта (StudyItems)" keyPlaceholder="ClassName книги" value={map('StudyItems')} onChange={(v) => set({ StudyItems: v as unknown as JsonValue })} />
                 </Box>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, gridColumn: '1 / -1' }}>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                    Гейтинг предметов <Typography component="span" variant="caption" color="text.secondary">(предмет → с какого ранга доступен)</Typography>
+                </Typography>
+                <GatingTable ranks={ranks} onChange={setRanks} />
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, gridColumn: '1 / -1' }}>
