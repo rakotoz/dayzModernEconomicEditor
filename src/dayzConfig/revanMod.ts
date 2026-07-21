@@ -35,6 +35,9 @@ const KNOWN_CONFIGS: { key: string; rel: string; label: string }[] = [
     { key: 'panelRoulette', rel: 'Rev_Panel/RouletteConfig.json', label: 'Panel — рулетка' },
     { key: 'vstorageConfig', rel: 'Rev_VStorage/StorageConfig.json', label: 'VStorage — конфиг' },
     { key: 'vstorageTerminals', rel: 'Rev_VStorage/Terminals.json', label: 'VStorage — терминалы' },
+    { key: 'vehiclesConfig', rel: 'Rev_Vehicles/VehiclesConfig.json', label: 'Vehicles — конфиг' },
+    { key: 'vehiclesLots', rel: 'Rev_Vehicles/ImpoundLots.json', label: 'Vehicles — паркоматы' },
+    { key: 'safeZones', rel: 'Rev_SafeZone/SafeZones.json', label: 'SafeZone — безопасные зоны' },
 ];
 
 export const listRevanConfigFiles = async (revModsDir: string): Promise<RevanConfigFile[]> => {

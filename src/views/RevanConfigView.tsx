@@ -19,6 +19,9 @@ import { RevRanksConfigView } from './RevRanksConfigView';
 import { RevCrossConfigView } from './RevCrossConfigView';
 import { RevRouletteConfigView } from './RevRouletteConfigView';
 import { RevVStorageConfigView } from './RevVStorageConfigView';
+import { RevVehiclesConfigView } from './RevVehiclesConfigView';
+import { RevSafeZoneConfigView } from './RevSafeZoneConfigView';
+import { RevImpoundLotsView, RevVStorageTerminalsView } from './RevSpawnPointsView';
 
 // Спец-экраны под конкретные конфиги (по стабильному key). Для остальных — generic RecursiveJsonForm.
 const DEDICATED_VIEWS: Record<string, React.ComponentType<{ data: Record<string, JsonValue>; onChange: (next: Record<string, JsonValue>) => void }>> = {
@@ -29,6 +32,10 @@ const DEDICATED_VIEWS: Record<string, React.ComponentType<{ data: Record<string,
     panelCross: RevCrossConfigView,
     panelRoulette: RevRouletteConfigView,
     vstorageConfig: RevVStorageConfigView,
+    vehiclesConfig: RevVehiclesConfigView,
+    safeZones: RevSafeZoneConfigView,
+    vehiclesLots: RevImpoundLotsView,
+    vstorageTerminals: RevVStorageTerminalsView,
 };
 
 // Коллекции — папки из многих файлов (товары, квесты…). У каждой свой самодостаточный экран
